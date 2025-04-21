@@ -1,0 +1,67 @@
+{
+    "ventas": [
+        {
+            "id": 1,
+            "fecha": "2025-04-16 21:12:48",
+            "total": 250.0,
+            "productos": [
+                {
+                    "id": 1,
+                    "nombre": "pan",
+                    "cantidad": 5,
+                    "subtotal": 250.0
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "fecha": "2025-04-16 21:19:51",
+            "total": 120.0,
+            "productos": [
+                {
+                    "id": 4,
+                    "nombre": "pan sobao",
+                    "cantidad": 24,
+                    "subtotal": 120.0
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "fecha": "2025-04-19 14:03:59",
+            "total": 35.0,
+            "cliente_id": null,
+            "productos": [
+                {
+                    "id": 2,
+                    "nombre": "huevo",
+                    "precio_unitario": 7.0,
+                    "cantidad": 5,
+                    "subtotal": 35.0
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "fecha": "2025-04-20 22:51:19",
+            "total": 112.5,
+            "cliente_id": null,
+            "productos": [
+                {
+                    "id": 6,
+                    "nombre": "queso de hoja",
+                    "precio_unitario": 150.0,
+                    "cantidad": 0.5,
+                    "subtotal": 75.0
+                },
+                {
+                    "id": 5,
+                    "nombre": "jamon",
+                    "precio_unitario": 75.0,
+                    "cantidad": 0.5,
+                    "subtotal": 37.5
+                }
+            ]
+        }
+    ]
+}
