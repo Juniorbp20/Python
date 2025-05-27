@@ -12,7 +12,9 @@
             "nombre": "Eudy",
             "telefono": "34803984",
             "direccion": "Canete",
-            "compras": []
+            "compras": [
+                8
+            ]
         }
     ]
 }

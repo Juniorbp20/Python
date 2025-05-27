@@ -4,28 +4,28 @@
             "id": 1,
             "nombre": "arroz",
             "precio": 20.0,
-            "stock": 100,
+            "stock": 70,
             "categoria": "Comida"
         },
         {
             "id": 2,
             "nombre": "huevo",
             "precio": 7.0,
-            "stock": 55,
+            "stock": 43,
             "categoria": "comida"
         },
         {
             "id": 3,
             "nombre": "salchichas",
             "precio": 25.0,
-            "stock": 25,
+            "stock": 24,
             "categoria": "Embutidos"
         },
         {
             "id": 4,
             "nombre": "Habichuelas",
             "precio": 25.0,
-            "stock": 200,
+            "stock": 199,
             "categoria": "Granos"
         },
         {
@@ -40,9 +40,17 @@
             "id": 6,
             "nombre": "queso de hoja",
             "precio": 150.0,
-            "stock": 24.5,
+            "stock": 23.5,
             "categoria": "lacteos",
             "proveedor_id": 1
+        },
+        {
+            "id": 7,
+            "nombre": "hacer",
+            "precio": 50.0,
+            "stock": 38,
+            "categoria": "Limpieza",
+            "proveedor_id": null
         }
     ]
 }
