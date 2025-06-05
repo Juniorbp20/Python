@@ -4,14 +4,14 @@
             "id": 1,
             "nombre": "arroz",
             "precio": 20.0,
-            "stock": 70,
+            "stock": 69,
             "categoria": "Comida"
         },
         {
             "id": 2,
             "nombre": "huevo",
             "precio": 7.0,
-            "stock": 43,
+            "stock": 42,
             "categoria": "comida"
         },
         {

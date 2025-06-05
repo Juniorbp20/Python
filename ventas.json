@@ -214,6 +214,44 @@
             "subtotal_bruto": 20.0,
             "dinero_recibido": 30.0,
             "cambio_devuelto": 10.0
+        },
+        {
+            "id": 12,
+            "fecha": "2025-05-28 19:53:01",
+            "total": 20.0,
+            "cliente_id": null,
+            "productos": [
+                {
+                    "id": 1,
+                    "nombre": "arroz",
+                    "cantidad": 1,
+                    "precio_unitario": 20.0,
+                    "subtotal": 20.0
+                }
+            ],
+            "descuento_aplicado": 0.0,
+            "subtotal_bruto": 20.0,
+            "dinero_recibido": 30.0,
+            "cambio_devuelto": 10.0
+        },
+        {
+            "id": 13,
+            "fecha": "2025-05-28 20:19:14",
+            "total": 7.0,
+            "cliente_id": null,
+            "productos": [
+                {
+                    "id": 2,
+                    "nombre": "huevo",
+                    "cantidad": 1,
+                    "precio_unitario": 7.0,
+                    "subtotal": 7.0
+                }
+            ],
+            "descuento_aplicado": 0.0,
+            "subtotal_bruto": 7.0,
+            "dinero_recibido": 10.0,
+            "cambio_devuelto": 3.0
         }
     ]
 }

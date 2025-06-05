@@ -381,8 +381,8 @@ def generar_texto_factura(datos_venta, nombre_cliente_str="Consumidor Final"):
     if nombre_cliente_str == "Ninguno" or not nombre_cliente_str:
         nombre_cliente_str = "Consumidor Final"
 
-    separador_largo = "=" * 40
-    separador_corto = "-" * 40
+    separador_largo = "=" * 45
+    separador_corto = "-" * 45
     texto = []
 
     # Encabezado del Colmado (Personaliza esto)
@@ -423,7 +423,7 @@ def generar_texto_factura(datos_venta, nombre_cliente_str="Consumidor Final"):
 
     texto.append(separador_corto)
 
-    ancho_etiqueta_total = 25
+    ancho_etiqueta_total = 30
 
     texto.append(f"{'SUBTOTAL BRUTO:':>{ancho_etiqueta_total}} ${datos_venta.get('subtotal_bruto', 0.0):>10.2f}")
     if datos_venta.get('descuento_aplicado', 0.0) > 0:
