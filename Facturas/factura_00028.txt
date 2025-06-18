@@ -1,0 +1,23 @@
+       *** PYCOLMADO *** 
+     Avenida Ejemplo #123    
+   La Vega, Republica Dominicana  
+       RNC: 101-00000-1       
+=============================================
+FACTURA #: 00028
+Fecha y Hora: 2025-06-05 21:28:55
+Cliente: Consumidor Final
+---------------------------------------------
+Cant Descripcion           ITBIS/U.     Monto
+---------------------------------------------
+   1 shampu refiel        RD$  46.80 RD$ 306.80
+---------------------------------------------
+           SUBTOTAL SIN ITBIS: RD$   260.00
+                  ITBIS TOTAL: RD$    46.80
+           SUBTOTAL CON ITBIS: RD$   306.80
+           TOTAL NETO A PAGAR: RD$   306.80
+---------------------------------------------
+              DINERO RECIBIDO: RD$   500.00
+              CAMBIO DEVUELTO: RD$   193.20
+=============================================
+    ¡Gracias por su compra!    
+=============================================

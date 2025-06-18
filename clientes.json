@@ -13,8 +13,25 @@
             "telefono": "34803984",
             "direccion": "Canete",
             "compras": [
-                8
+                8,
+                16
             ]
+        },
+        {
+            "id": 3,
+            "nombre": "Josefina",
+            "telefono": "0000000000",
+            "direccion": "conuco",
+            "compras": [
+                15
+            ]
+        },
+        {
+            "id": 4,
+            "nombre": "Manuel Perez",
+            "telefono": "52251148200",
+            "direccion": "Salcedo",
+            "compras": []
         }
     ]
 }

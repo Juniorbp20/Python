@@ -1,0 +1,23 @@
+       *** PYCOLMADO *** 
+     Avenida Ejemplo #123    
+   La Vega, Republica Dominicana  
+       RNC: 101-00000-1       
+=============================================
+FACTURA #: 00027
+Fecha y Hora: 2025-06-05 18:22:48
+Cliente: Consumidor Final
+---------------------------------------------
+Cant Descripcion           ITBIS/U.     Monto
+---------------------------------------------
+   1 Ambientador Glade Sp RD$  23.40 RD$ 153.40
+---------------------------------------------
+           SUBTOTAL SIN ITBIS: RD$   130.00
+                  ITBIS TOTAL: RD$    23.40
+           SUBTOTAL CON ITBIS: RD$   153.40
+           TOTAL NETO A PAGAR: RD$   153.40
+---------------------------------------------
+              DINERO RECIBIDO: RD$   500.00
+              CAMBIO DEVUELTO: RD$   346.60
+=============================================
+    ¡Gracias por su compra!    
+=============================================

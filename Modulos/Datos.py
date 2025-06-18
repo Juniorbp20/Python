@@ -8,6 +8,7 @@ from typing import TextIO
 ARCHIVO_PRODUCTOS = "productos.json"
 ARCHIVO_VENTAS = "ventas.json"
 ARCHIVO_CLIENTES = "clientes.json"
+ARCHIVO_PROVEEDORES = "proveedores.json"
 
 def cargar_datos(archivo):
     """Carga datos desde un archivo JSON. Si no existe, retorna la estructura adecuada según el archivo."""
@@ -20,6 +21,8 @@ def cargar_datos(archivo):
         return {"clientes": []}
     elif archivo == ARCHIVO_VENTAS:
         return {"ventas": []}
+    elif archivo == ARCHIVO_PROVEEDORES:
+        return {"proveedores": []}
     else:  # ARCHIVO_PRODUCTOS
         return {"productos": []}
 
@@ -37,3 +40,5 @@ def inicializar_archivos():
         guardar_datos({"ventas": []}, ARCHIVO_VENTAS)
     if not os.path.exists(ARCHIVO_CLIENTES):
         guardar_datos({"clientes": []}, ARCHIVO_CLIENTES)
+    if not os.path.exists(ARCHIVO_PROVEEDORES):
+        guardar_datos({"proveedores": []}, ARCHIVO_PROVEEDORES)

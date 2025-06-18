@@ -252,6 +252,389 @@
             "subtotal_bruto": 7.0,
             "dinero_recibido": 10.0,
             "cambio_devuelto": 3.0
+        },
+        {
+            "id": 14,
+            "fecha": "2025-06-04 22:38:06",
+            "total": 150.0,
+            "cliente_id": null,
+            "productos": [
+                {
+                    "id": 6,
+                    "nombre": "queso de hoja",
+                    "cantidad": 1,
+                    "precio_unitario": 150.0,
+                    "subtotal": 150.0
+                }
+            ],
+            "descuento_aplicado": 0.0,
+            "subtotal_bruto": 150.0,
+            "dinero_recibido": 200.0,
+            "cambio_devuelto": 50.0
+        },
+        {
+            "id": 15,
+            "fecha": "2025-06-04 22:39:13",
+            "total": 25.0,
+            "cliente_id": 3,
+            "productos": [
+                {
+                    "id": 3,
+                    "nombre": "salchichas",
+                    "cantidad": 1,
+                    "precio_unitario": 25.0,
+                    "subtotal": 25.0
+                }
+            ],
+            "descuento_aplicado": 0.0,
+            "subtotal_bruto": 25.0,
+            "dinero_recibido": 500.0,
+            "cambio_devuelto": 475.0
+        },
+        {
+            "id": 16,
+            "fecha": "2025-06-05 11:11:03",
+            "total": 85.0,
+            "cliente_id": 2,
+            "productos": [
+                {
+                    "id": 6,
+                    "nombre": "queso de hoja",
+                    "cantidad": 0.5,
+                    "precio_unitario": 150.0,
+                    "subtotal": 75.0
+                },
+                {
+                    "id": 1,
+                    "nombre": "arroz",
+                    "cantidad": 0.5,
+                    "precio_unitario": 20.0,
+                    "subtotal": 10.0
+                }
+            ],
+            "descuento_aplicado": 0.0,
+            "subtotal_bruto": 85.0,
+            "dinero_recibido": 100.0,
+            "cambio_devuelto": 15.0
+        },
+        {
+            "id": 17,
+            "fecha": "2025-06-05 11:27:11",
+            "total": 1175.0,
+            "cliente_id": null,
+            "productos": [
+                {
+                    "id": 10,
+                    "nombre": "Caf\u00c3\u00a9 Santo Domingo (Bolsa 1 Lb)",
+                    "cantidad": 1.0,
+                    "precio_unitario": 250.0,
+                    "subtotal": 250.0
+                },
+                {
+                    "id": 20,
+                    "nombre": "Pl\u00c3\u00a1tanos Verdes (Unidad)",
+                    "cantidad": 50.0,
+                    "precio_unitario": 15.0,
+                    "subtotal": 750.0
+                },
+                {
+                    "id": 51,
+                    "nombre": "Shampoo Sedal (Botella Peque\u00c3\u00b1a)",
+                    "cantidad": 1.0,
+                    "precio_unitario": 90.0,
+                    "subtotal": 90.0
+                },
+                {
+                    "id": 37,
+                    "nombre": "Tomates Bugal\u00c3\u00ba (Libra)",
+                    "cantidad": 1.0,
+                    "precio_unitario": 35.0,
+                    "subtotal": 35.0
+                },
+                {
+                    "id": 49,
+                    "nombre": "Galletas de Soda (Tubo)",
+                    "cantidad": 2.0,
+                    "precio_unitario": 25.0,
+                    "subtotal": 50.0
+                }
+            ],
+            "descuento_aplicado": 0.0,
+            "subtotal_bruto": 1175.0,
+            "dinero_recibido": 2000.0,
+            "cambio_devuelto": 825.0
+        },
+        {
+            "id": 18,
+            "fecha": "2025-06-05 14:49:39",
+            "cliente_id": null,
+            "productos": [
+                {
+                    "id": 10,
+                    "nombre": "Cafe Santo Domingo (Bolsa 1 Lb)",
+                    "cantidad": 1.0,
+                    "precio_unitario": 250.0,
+                    "subtotal": 250.0,
+                    "itbis_item_total": 0.0
+                }
+            ],
+            "subtotal_bruto_sin_itbis": 250.0,
+            "itbis_total_venta": 0.0,
+            "subtotal_bruto_con_itbis": 250.0,
+            "descuento_aplicado": 0.0,
+            "total_neto": 250.0,
+            "dinero_recibido": 300.0,
+            "cambio_devuelto": 50.0
+        },
+        {
+            "id": 19,
+            "fecha": "2025-06-05 14:57:47",
+            "cliente_id": null,
+            "productos": [
+                {
+                    "id": 11,
+                    "nombre": "Leche Evaporada Carnation (Lata)",
+                    "cantidad": 1.0,
+                    "precio_unitario": 59.0,
+                    "subtotal": 59.0,
+                    "itbis_item_total": 9.0
+                }
+            ],
+            "subtotal_bruto_sin_itbis": 50.0,
+            "itbis_total_venta": 9.0,
+            "subtotal_bruto_con_itbis": 59.0,
+            "descuento_aplicado": 0.0,
+            "total_neto": 59.0,
+            "dinero_recibido": 100.0,
+            "cambio_devuelto": 41.0
+        },
+        {
+            "id": 20,
+            "fecha": "2025-06-05 15:02:12",
+            "cliente_id": null,
+            "productos": [
+                {
+                    "id": 12,
+                    "nombre": "Pan de Agua (Unidad)",
+                    "cantidad": 1.0,
+                    "precio_unitario": 7.0,
+                    "subtotal": 7.0,
+                    "itbis_item_total": 0.0
+                }
+            ],
+            "subtotal_bruto_sin_itbis": 7.0,
+            "itbis_total_venta": 0.0,
+            "subtotal_bruto_con_itbis": 7.0,
+            "descuento_aplicado": 0.0,
+            "total_neto": 7.0,
+            "dinero_recibido": 10.0,
+            "cambio_devuelto": 3.0
+        },
+        {
+            "id": 21,
+            "fecha": "2025-06-05 15:02:39",
+            "cliente_id": null,
+            "productos": [
+                {
+                    "id": 12,
+                    "nombre": "Pan de Agua (Unidad)",
+                    "cantidad": 1.0,
+                    "precio_unitario": 7.0,
+                    "subtotal": 7.0,
+                    "itbis_item_total": 0.0
+                },
+                {
+                    "id": 11,
+                    "nombre": "Leche Evaporada Carnation (Lata)",
+                    "cantidad": 1.0,
+                    "precio_unitario": 59.0,
+                    "subtotal": 59.0,
+                    "itbis_item_total": 9.0
+                }
+            ],
+            "subtotal_bruto_sin_itbis": 57.0,
+            "itbis_total_venta": 9.0,
+            "subtotal_bruto_con_itbis": 66.0,
+            "descuento_aplicado": 0.0,
+            "total_neto": 66.0,
+            "dinero_recibido": 100.0,
+            "cambio_devuelto": 34.0
+        },
+        {
+            "id": 22,
+            "fecha": "2025-06-05 15:04:33",
+            "cliente_id": null,
+            "productos": [
+                {
+                    "id": 11,
+                    "nombre": "Leche Evaporada Carnation (Lata)",
+                    "cantidad": 1.0,
+                    "precio_unitario": 59.0,
+                    "subtotal": 59.0,
+                    "itbis_item_total": 9.0
+                }
+            ],
+            "subtotal_bruto_sin_itbis": 50.0,
+            "itbis_total_venta": 9.0,
+            "subtotal_bruto_con_itbis": 59.0,
+            "descuento_aplicado": 0.0,
+            "total_neto": 59.0,
+            "dinero_recibido": 60.0,
+            "cambio_devuelto": 1.0
+        },
+        {
+            "id": 23,
+            "fecha": "2025-06-05 15:31:14",
+            "cliente_id": null,
+            "productos": [
+                {
+                    "id": 108,
+                    "nombre": "Lactoval wet Jabon intimo 200ml",
+                    "cantidad": 1.0,
+                    "precio_unitario": 696.2,
+                    "subtotal": 696.2,
+                    "itbis_item_total": 106.20000000000005
+                }
+            ],
+            "subtotal_bruto_sin_itbis": 590.0,
+            "itbis_total_venta": 106.2,
+            "subtotal_bruto_con_itbis": 696.2,
+            "descuento_aplicado": 0.0,
+            "total_neto": 696.2,
+            "dinero_recibido": 700.0,
+            "cambio_devuelto": 3.8
+        },
+        {
+            "id": 24,
+            "fecha": "2025-06-05 15:33:14",
+            "cliente_id": null,
+            "productos": [
+                {
+                    "id": 108,
+                    "nombre": "Lactoval wet Jabon intimo 200ml",
+                    "cantidad": 1.0,
+                    "precio_unitario": 696.2,
+                    "subtotal": 696.2,
+                    "itbis_item_total": 106.20000000000005
+                }
+            ],
+            "subtotal_bruto_sin_itbis": 590.0,
+            "itbis_total_venta": 106.2,
+            "subtotal_bruto_con_itbis": 696.2,
+            "descuento_aplicado": 0.0,
+            "total_neto": 696.2,
+            "dinero_recibido": 1000.0,
+            "cambio_devuelto": 303.8
+        },
+        {
+            "id": 25,
+            "fecha": "2025-06-05 18:12:09",
+            "cliente_id": null,
+            "productos": [
+                {
+                    "id": 109,
+                    "nombre": "jabon intimo lactoval 200ml",
+                    "cantidad": 1.0,
+                    "precio_unitario": 590.0,
+                    "subtotal": 590.0,
+                    "itbis_item_total": 0.0
+                }
+            ],
+            "subtotal_bruto_sin_itbis": 590.0,
+            "itbis_total_venta": 0.0,
+            "subtotal_bruto_con_itbis": 590.0,
+            "descuento_aplicado": 0.0,
+            "total_neto": 590.0,
+            "dinero_recibido": 600.0,
+            "cambio_devuelto": 10.0
+        },
+        {
+            "id": 26,
+            "fecha": "2025-06-05 18:20:08",
+            "cliente_id": null,
+            "productos": [
+                {
+                    "id": 109,
+                    "nombre": "jabon intimo lactoval 200ml",
+                    "cantidad": 1.0,
+                    "precio_unitario": 590.0,
+                    "subtotal": 590.0,
+                    "itbis_item_total": 0.0
+                }
+            ],
+            "subtotal_bruto_sin_itbis": 590.0,
+            "itbis_total_venta": 0.0,
+            "subtotal_bruto_con_itbis": 590.0,
+            "descuento_aplicado": 0.0,
+            "total_neto": 590.0,
+            "dinero_recibido": 590.0,
+            "cambio_devuelto": 0.0
+        },
+        {
+            "id": 27,
+            "fecha": "2025-06-05 18:22:48",
+            "cliente_id": null,
+            "productos": [
+                {
+                    "id": 100,
+                    "nombre": "Ambientador Glade Spray",
+                    "cantidad": 1.0,
+                    "precio_unitario": 153.4,
+                    "subtotal": 153.4,
+                    "itbis_item_total": 23.400000000000006
+                }
+            ],
+            "subtotal_bruto_sin_itbis": 130.0,
+            "itbis_total_venta": 23.4,
+            "subtotal_bruto_con_itbis": 153.4,
+            "descuento_aplicado": 0.0,
+            "total_neto": 153.4,
+            "dinero_recibido": 500.0,
+            "cambio_devuelto": 346.6
+        },
+        {
+            "id": 28,
+            "fecha": "2025-06-05 21:28:55",
+            "cliente_id": null,
+            "productos": [
+                {
+                    "id": 110,
+                    "nombre": "shampu refiel",
+                    "cantidad": 1.0,
+                    "precio_unitario": 306.8,
+                    "subtotal": 306.8,
+                    "itbis_item_total": 46.80000000000001
+                }
+            ],
+            "subtotal_bruto_sin_itbis": 260.0,
+            "itbis_total_venta": 46.8,
+            "subtotal_bruto_con_itbis": 306.8,
+            "descuento_aplicado": 0.0,
+            "total_neto": 306.8,
+            "dinero_recibido": 500.0,
+            "cambio_devuelto": 193.2
+        },
+        {
+            "id": 29,
+            "fecha": "2025-06-05 21:53:06",
+            "cliente_id": null,
+            "productos": [
+                {
+                    "id": 111,
+                    "nombre": "jabon intimo saviloe",
+                    "cantidad": 1.0,
+                    "precio_unitario": 920.4,
+                    "subtotal": 920.4,
+                    "itbis_item_total": 140.39999999999998
+                }
+            ],
+            "subtotal_bruto_sin_itbis": 780.0,
+            "itbis_total_venta": 140.4,
+            "subtotal_bruto_con_itbis": 920.4,
+            "descuento_aplicado": 0.0,
+            "total_neto": 920.4,
+            "dinero_recibido": 1000.0,
+            "cambio_devuelto": 79.6
         }
     ]
 }
