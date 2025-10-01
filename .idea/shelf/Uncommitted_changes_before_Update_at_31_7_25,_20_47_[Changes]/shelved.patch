@@ -1,0 +1,1521 @@
+Index: SCDO.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import json\nimport os\nfrom datetime import datetime\nfrom typing import TextIO\n\n# --------------------------\n# Configuración Inicial\n# --------------------------\nARCHIVO_PRODUCTOS = \"productos.json\"\nARCHIVO_VENTAS = \"ventas.json\"\nARCHIVO_CLIENTES = \"clientes.json\"\n\n\ndef cargar_datos(archivo):\n    \"\"\"Carga datos desde un archivo JSON. Si no existe, retorna la estructura adecuada según el archivo.\"\"\"\n    if os.path.exists(archivo):\n        with open(archivo, \"r\") as f:\n            return json.load(f)\n\n    # Estructuras por defecto específicas para cada archivo\n    if archivo == ARCHIVO_CLIENTES:\n        return {\"clientes\": []}\n    elif archivo == ARCHIVO_VENTAS:\n        return {\"ventas\": []}\n    else:  # ARCHIVO_PRODUCTOS\n        return {\"productos\": []}\n\ndef guardar_datos(datos, archivo):\n    \"\"\"Guarda datos en un archivo JSON.\"\"\"\n    f: TextIO\n    with open(archivo, \"w\") as f:\n        json.dump(datos, f, indent=4)\n\n# --------------------------\n# Módulo de Productos\n# --------------------------\ndef agregar_producto():\n    \"\"\"Registra uno o más productos en el archivo, con opción de asociar proveedor.\"\"\"\n    while True:\n        print(\"\\n--- AGREGAR PRODUCTO ---\")\n        nombre = input(\"Nombre del producto: \")\n        precio = float(input(\"Precio unitario: \"))\n        stock = int(input(\"Stock inicial: \"))\n        categoria = input(\"Categoría (opcional): \") or \"General\"\n\n        # Opción para asociar proveedor (cliente)\n        proveedor_id = None\n        if input(\"¿Asociar a un proveedor/cliente registrado? (s/n): \").lower() == 's': # ojo con lo que recibe\n            listar_clientes()\n            try:\n                proveedor_id = int(input(\"ID del proveedor/cliente (0 para omitir): \"))\n                if proveedor_id == 0:\n                    proveedor_id = None\n            except ValueError:\n                print(\"⚠\uFE0F ID inválido. Se continuará sin proveedor.\")\n\n        datos = cargar_datos(ARCHIVO_PRODUCTOS)\n        nuevo_producto = {\n            \"id\": len(datos[\"productos\"]) + 1,\n            \"nombre\": nombre,\n            \"precio\": precio,\n            \"stock\": stock,\n            \"categoria\": categoria,\n            \"proveedor_id\": proveedor_id  # Nuevo campo\n        }\n\n        datos[\"productos\"].append(nuevo_producto)\n        guardar_datos(datos, ARCHIVO_PRODUCTOS)\n\n        # Mostrar info del proveedor si existe\n        if proveedor_id:\n            datos_clientes = cargar_datos(ARCHIVO_CLIENTES)\n            proveedor = next((c for c in datos_clientes[\"clientes\"] if c[\"id\"] == proveedor_id), None)\n            if proveedor:\n                print(f\"✅ Producto '{nombre}' agregado con proveedor: {proveedor['nombre']}\")\n            else:\n                print(f\"✅ Producto '{nombre}' agregado (proveedor ID {proveedor_id} no encontrado)\")\n        else:\n            print(f\"✅ Producto '{nombre}' agregado!\")\n\n        if input(\"¿Agregar otro producto? (s/n): \").lower() != 's':\n            break\n\n\ndef listar_productos():\n    \"\"\"Muestra todos los productos en stock con información de cliente/proveedor asociado.\"\"\"\n    datos = cargar_datos(ARCHIVO_PRODUCTOS)\n    productos = datos[\"productos\"]\n    datos_clientes = cargar_datos(ARCHIVO_CLIENTES)\n    clientes = datos_clientes[\"clientes\"]\n\n    print(\"\\n--- LISTA DE PRODUCTOS ---\")\n    for producto in productos:\n        # Buscar el cliente/proveedor asociado si existe\n        nombre_cliente = \"N/A\"\n        if \"proveedor_id\" in producto and producto[\"proveedor_id\"]:\n            cliente = next((c for c in clientes if c[\"id\"] == producto[\"proveedor_id\"]), None)\n            nombre_cliente = cliente[\"nombre\"] if cliente else \"Proveedor no encontrado\"\n\n        print(\n            f\"ID: {producto['id']} | {producto['nombre']} | ${producto['precio']:.2f} | Stock: {producto['stock']} | Proveedor: {nombre_cliente}\")\n# --------------------------\n# Módulo de Ventas\n# --------------------------\ndef nueva_venta():\n    \"\"\"Procesa una venta con opción de cliente, descuentos y validación mejorada.\"\"\"\n    print(\"\\n--- NUEVA VENTA ---\")\n\n    # Cargar datos\n    datos_productos = cargar_datos(ARCHIVO_PRODUCTOS)\n    datos_ventas = cargar_datos(ARCHIVO_VENTAS)\n    datos_clientes = cargar_datos(ARCHIVO_CLIENTES) if os.path.exists(ARCHIVO_CLIENTES) else {\"clientes\": []}\n\n    # Validar productos\n    if not datos_productos[\"productos\"]:\n        print(\"❌ No hay productos registrados.\")\n        return\n\n    # Selección de cliente (opcional)\n    cliente_id = None\n    if input(\"¿Asociar a cliente registrado? (s/n): \").lower() == 's':\n        listar_clientes()\n        try:\n            cliente_id = int(input(\"ID del cliente (0 para omitir): \"))\n            if cliente_id != 0 and not any(c[\"id\"] == cliente_id for c in datos_clientes[\"clientes\"]):\n                print(\"⚠\uFE0F ID no encontrado. Continuando sin cliente.\")\n                cliente_id = None\n        except ValueError:\n            print(\"⚠\uFE0F Entrada inválida. Continuando sin cliente.\")\n\n    # Proceso de venta\n    listar_productos()\n    productos_vendidos = []\n    total = 0.0\n\n    while True:\n        try:\n            id_producto = int(input(\"\\nID del producto (0 para finalizar): \"))\n            if id_producto == 0:\n                break\n\n            producto = next((p for p in datos_productos[\"productos\"] if p[\"id\"] == id_producto), None)\n            if not producto:\n                print(\"❌ Producto no encontrado.\")\n                continue\n\n            cantidad = float(input(f\"Cantidad de '{producto['nombre']}': \"))\n            if cantidad <= 0:\n                print(\"❌ La cantidad debe ser mayor a 0.\")\n                continue\n            if cantidad > producto[\"stock\"]:\n                print(f\"❌ Stock insuficiente. Disponible: {producto['stock']}\")\n                continue\n\n            # Actualizar datos\n            producto[\"stock\"] -= cantidad\n            subtotal = producto[\"precio\"] * cantidad\n            total += subtotal\n            productos_vendidos.append({\n                \"id\": producto[\"id\"],\n                \"nombre\": producto[\"nombre\"],\n                \"precio_unitario\": producto[\"precio\"],\n                \"cantidad\": cantidad,\n                \"subtotal\": subtotal\n            })\n            print(f\"➕ {producto['nombre']} x{cantidad} | ${subtotal:.2f}\")\n\n        except ValueError:\n            print(\"❌ Entrada inválida. Use números.\")\n\n    # Validar venta\n    if not productos_vendidos:\n        print(\"❌ Venta cancelada (no hay productos).\")\n        return\n\n    # Aplicar descuento (opcional)\n    if input(\"\\n¿Aplicar descuento? (s/n): \").lower() == 's':\n        try:\n            tipo = input(\"Tipo (% o monto): \").lower()\n            if tipo == '%':\n                porcentaje = float(input(\"Porcentaje (ej. 10): \"))\n                descuento = total * (porcentaje / 100)\n            else:\n                descuento = float(input(\"Monto (ej. 5.00): \"))\n            total = max(0, total - descuento)\n            print(f\"\uD83C\uDFAB Descuento aplicado: ${descuento:.2f}\")\n        except ValueError:\n            print(\"⚠\uFE0F Descuento no válido. Ignorando.\")\n\n    # Confirmación final\n    print(f\"\\n\uD83D\uDED2 TOTAL A PAGAR: ${total:.2f}\")\n    if input(\"¿Confirmar venta? (s/n): \").lower() != 's':\n        print(\"❌ Venta cancelada.\")\n        return\n\n    # Guardar venta\n    nueva_venta = {\n        \"id\": len(datos_ventas[\"ventas\"]) + 1,\n        \"fecha\": datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\"),\n        \"total\": total,\n        \"cliente_id\": cliente_id,\n        \"productos\": productos_vendidos\n    }\n    datos_ventas[\"ventas\"].append(nueva_venta)\n\n    # Actualizar historial del cliente\n    if cliente_id:\n        cliente = next(c for c in datos_clientes[\"clientes\"] if c[\"id\"] == cliente_id)\n        cliente[\"compras\"].append(nueva_venta[\"id\"])\n\n    # Guardar todos los datos\n    guardar_datos(datos_productos, ARCHIVO_PRODUCTOS)\n    guardar_datos(datos_ventas, ARCHIVO_VENTAS)\n    if cliente_id:\n        guardar_datos(datos_clientes, ARCHIVO_CLIENTES)\n\n    print(f\"\\n✅ Venta registrada (ID: {nueva_venta['id']})\")\n    if cliente_id:\n        cliente = next(c for c in datos_clientes[\"clientes\"] if c[\"id\"] == cliente_id)\n        print(f\"\uD83D\uDCDD Cliente: {cliente['nombre']} (ID: {cliente_id})\")\n\n# Buscar productos nombre o categoria\ndef buscar_producto():\n    \"\"\"Busca productos por nombre o categoría y muestra resultados.\"\"\"\n    print(\"\\n--- BUSCAR PRODUCTO ---\")\n    termino = input(\"Ingrese nombre o categoría del producto: \").lower()\n    datos = cargar_datos(ARCHIVO_PRODUCTOS)\n    resultados = [\n        p for p in datos[\"productos\"]\n        if termino in p[\"nombre\"].lower() or termino in p[\"categoria\"].lower()\n    ]\n\n    if not resultados:\n        print(\"❌ No se encontraron coincidencias.\")\n    else:\n        print(\"\\n--- RESULTADOS ---\")\n        for producto in resultados:\n            print(f\"ID: {producto['id']} | {producto['nombre']} | ${producto['precio']:.2f} | Stock: {producto['stock']}\")\n\n# modificar productos\ndef modificar_producto():\n    \"\"\"Edita los detalles de un producto existente.\"\"\"\n    print(\"\\n--- MODIFICAR PRODUCTO ---\")\n    listar_productos()\n    id_producto = int(input(\"ID del producto a modificar: \"))\n    datos = cargar_datos(ARCHIVO_PRODUCTOS)\n\n    producto = next((p for p in datos[\"productos\"] if p[\"id\"] == id_producto), None)\n    if not producto:\n        print(\"❌ ID no válido.\")\n        return\n\n    print(f\"\\nEditando: {producto['nombre']} (Stock: {producto['stock']})\")\n    producto[\"nombre\"] = input(f\"Nuevo nombre ({producto['nombre']}): \") or producto[\"nombre\"]\n    producto[\"precio\"] = float(input(f\"Nuevo precio ({producto['precio']:.2f}): \") or producto[\"precio\"])\n    producto[\"stock\"] = int(input(f\"Nuevo stock ({producto['stock']}): \") or producto[\"stock\"])\n    producto[\"categoria\"] = input(f\"Nueva categoría ({producto['categoria']}): \") or producto[\"categoria\"]\n\n    guardar_datos(datos, ARCHIVO_PRODUCTOS)\n    print(\"✅ Producto actualizado!\")\n\n#Eliminar Productos\ndef eliminar_producto():\n    \"\"\"Elimina un producto del archivo y reindexa los IDs.\"\"\"\n    print(\"\\n--- ELIMINAR PRODUCTO ---\")\n    listar_productos()\n    id_producto = int(input(\"ID del producto a eliminar: \"))\n    datos = cargar_datos(ARCHIVO_PRODUCTOS)\n\n    producto = next((p for p in datos[\"productos\"] if p[\"id\"] == id_producto), None)\n    if not producto:\n        print(\"❌ ID no válido.\")\n        return\n\n    confirmacion = input(f\"¿Eliminar '{producto['nombre']}'? (s/n): \").lower()\n    if confirmacion == 's':\n        # Elimina el producto\n        datos[\"productos\"] = [p for p in datos[\"productos\"] if p[\"id\"] != id_producto]\n\n    #problema resuelto con el else\n    else:\n        print(\"Producto no eliminado.\")\n        return\n\n    #  Reindexa los IDs restantes\n    for i, producto in enumerate(datos[\"productos\"], start=1):\n        producto[\"id\"] = i\n\n    guardar_datos(datos, ARCHIVO_PRODUCTOS)\n    print(\"✅ Producto eliminado y IDs actualizados!\")\n\n#Alertas de stock\ndef alertas_stock():\n    \"\"\"Muestra productos con stock bajo.\"\"\"\n    umbral = int(input(\"\\nStock mínimo para alerta (ej. 10): \"))\n    datos = cargar_datos(ARCHIVO_PRODUCTOS)\n    productos_bajos = [p for p in datos[\"productos\"] if p[\"stock\"] < umbral]\n\n    print(f\"\\n--- PRODUCTOS CON STOCK menor a {umbral} ---\")\n    if not productos_bajos:\n        print(\"✅ Todos los productos están bien surtidos.\")\n    else:\n        for producto in productos_bajos:\n            print(f\"{producto['nombre']} | Stock: {producto['stock']}\")\n\n\n#-----------------------------------------------------------------------------------------------------------------------\n# Historial de ventas\ndef historial_ventas():\n    \"\"\"Muestra ventas filtradas por fecha y calcula totales.\"\"\"\n    print(\"\\n--- HISTORIAL DE VENTAS ---\")\n    print(\"1. Ver todas las ventas\")\n    print(\"2. Filtrar por rango de fechas\")\n    opcion = input(\"Seleccione una opción (1/2): \")\n\n    datos = cargar_datos(ARCHIVO_VENTAS)\n    if not datos[\"ventas\"]:\n        print(\"❌ No hay ventas registradas.\")\n        return\n\n    ventas_filtradas = []\n    if opcion == \"1\":\n        ventas_filtradas = datos[\"ventas\"]\n    elif opcion == \"2\":\n        fecha_inicio = input(\"Fecha inicial (YYYY-MM-DD): \")\n        fecha_fin = input(\"Fecha final (YYYY-MM-DD): \")\n        for venta in datos[\"ventas\"]:\n            if fecha_inicio <= venta[\"fecha\"][:10] <= fecha_fin:\n                ventas_filtradas.append(venta)\n    else:\n        print(\"❌ Opción inválida.\")\n        return\n\n    if not ventas_filtradas:\n        print(\"❌ No hay ventas en el rango seleccionado.\")\n        return\n\n    print(\"\\n--- RESULTADOS ---\")\n    total_periodo = 0.0\n    for venta in ventas_filtradas:\n        print(f\"\\n\uD83D\uDCC5 Fecha: {venta['fecha']} | Total: ${venta['total']:.2f}\")\n        print(\"\uD83D\uDCE6 Productos:\")\n        for producto in venta[\"productos\"]:\n            print(f\"   - {producto['nombre']} x{producto['cantidad']} (${producto['subtotal']:.2f})\")\n        total_periodo += venta[\"total\"]\n\n    print(f\"\\n\uD83D\uDCB0 TOTAL DEL PERÍODO: ${total_periodo:.2f}\")\n#-----------------------------------------------------------------------------------------------------------------------\n#Registrar Cliente\ndef registrar_cliente():\n    \"\"\"Registra un nuevo cliente en el sistema.\"\"\"\n    print(\"\\n--- REGISTRAR CLIENTE ---\")\n    nombre = input(\"Nombre completo: \")\n    telefono = input(\"Teléfono: \")\n    direccion = input(\"Dirección (opcional): \")\n\n    datos = cargar_datos(ARCHIVO_CLIENTES)\n    nuevo_cliente = {\n        \"id\": len(datos[\"clientes\"]) + 1,\n        \"nombre\": nombre,\n        \"telefono\": telefono,\n        \"direccion\": direccion,\n        \"compras\": []  # Historial de IDs de ventas\n    }\n    datos[\"clientes\"].append(nuevo_cliente)\n    guardar_datos(datos, ARCHIVO_CLIENTES)\n    print(f\"✅ Cliente '{nombre}' registrado (ID: {nuevo_cliente['id']})\")\n\n#Listar Clientes\ndef listar_clientes():\n    \"\"\"Muestra todos los clientes registrados.\"\"\"\n    datos = cargar_datos(ARCHIVO_CLIENTES)\n    print(\"\\n--- CLIENTES REGISTRADOS ---\")\n    for cliente in datos[\"clientes\"]:\n        print(f\"ID: {cliente['id']} | {cliente['nombre']} | Tel: {cliente['telefono']}\")\n\ndef historial_cliente():\n    \"\"\"Muestra las compras de un cliente específico.\"\"\"\n    listar_clientes()\n    id_cliente = int(input(\"\\nID del cliente a consultar: \"))\n    datos_clientes = cargar_datos(ARCHIVO_CLIENTES)\n    datos_ventas = cargar_datos(ARCHIVO_VENTAS)\n\n    cliente = next((c for c in datos_clientes[\"clientes\"] if c[\"id\"] == id_cliente), None)\n    if not cliente:\n        print(\"❌ Cliente no encontrado.\")\n        return\n\n    print(f\"\\n\uD83D\uDCCB HISTORIAL DE {cliente['nombre'].upper()}\")\n    for venta_id in cliente[\"compras\"]:\n        venta = next((v for v in datos_ventas[\"ventas\"] if v[\"id\"] == venta_id), None)\n        if venta:\n            print(f\"\\n\uD83D\uDCC5 {venta['fecha']} | Total: ${venta['total']:.2f}\")\n            for producto in venta[\"productos\"]:\n                print(f\"   - {producto['nombre']} x{producto['cantidad']}\")\n\n\n\n\n\n# --------------------------\n# Menú Principal\n# --------------------------\ndef mostrar_menu():\n    print(\"\\n=== GESTIÓN DE COLOMADO ===\")\n    print(\"1. Agregar Producto\")\n    print(\"2. Listar Productos\")\n    print(\"3. Buscar Producto\")\n    print(\"4. Modificar Producto\")\n    print(\"5. Eliminar Producto\")\n    print(\"6. Alertas de Stock\")\n    print(\"7. Nueva Venta\")\n    print(\"8. Historial de ventas\")\n    print(\"9. Registrar Cliente\")\n    print(\"10. Historial de Cliente\")\n    print(\"0. Salir\")\n\ndef main():\n    # Crear archivos si no existen\n    if not os.path.exists(ARCHIVO_PRODUCTOS):\n        guardar_datos({\"productos\": []}, ARCHIVO_PRODUCTOS)\n    if not os.path.exists(ARCHIVO_VENTAS):\n        guardar_datos({\"ventas\": []}, ARCHIVO_VENTAS)\n\n    while True:\n        mostrar_menu()\n        opcion = input(\"Seleccione una opción: \")\n\n        if opcion == \"1\":\n            agregar_producto()\n        elif opcion == \"2\":\n            listar_productos()\n        elif opcion == \"3\":\n            buscar_producto()\n        elif opcion == \"4\":\n            modificar_producto()\n        elif opcion == \"5\":\n            eliminar_producto()\n        elif opcion == \"6\":\n            alertas_stock()\n        elif opcion == \"7\":\n            nueva_venta()\n        elif opcion ==\"8\":\n            historial_ventas()\n        elif opcion == \"9\":\n            registrar_cliente()\n        elif opcion == \"10\":\n            historial_cliente()\n        elif opcion == \"0\":\n            print(\"¡Hasta luego! \uD83D\uDC4B\")\n            break\n        else:\n            print(\"❌ Opción inválida. Intente de nuevo.\")\n\nif __name__ == \"__main__\":\n    main()
+===================================================================
+diff --git a/SCDO.py b/SCDO.py
+--- a/SCDO.py	(revision a9a549115f246b69b29e7141fa2153205553eacf)
++++ b/SCDO.py	(date 1747096956235)
+@@ -1,456 +1,1121 @@
++import tkinter as tk
++from tkinter import ttk, messagebox, simpledialog
++from datetime import datetime
+ import json
+ import os
+-from datetime import datetime
+-from typing import TextIO
++
++import self
+ 
+ # --------------------------
+ # Configuración Inicial
+ # --------------------------
+ ARCHIVO_PRODUCTOS = "productos.json"
+ ARCHIVO_VENTAS = "ventas.json"
+-ARCHIVO_CLIENTES = "clientes.json"
++ARCHIVO_PROOVEDOR = "clientes.json"
++
++
++class SistemaColmadoApp:
++    def __init__(self, root):
++        self.root = root
++        self.root.title("Sistema de Gestión de Colmado")
++        self.root.geometry("1000x700")
++
++        # Crear archivos si no existen
++        self.inicializar_archivos()
++
++        # Estilo
++        self.estilo = ttk.Style()
++        self.estilo.configure('TFrame', background='#f0f0f0')
++        self.estilo.configure('TButton', padding=5, font=('Arial', 10))
++        self.estilo.configure('TLabel', background='#f0f0f0', font=('Arial', 10))
+ 
++        # Crear pestañas
++        self.notebook = ttk.Notebook(root)
++        self.notebook.pack(fill=tk.BOTH, expand=True)
+ 
+-def cargar_datos(archivo):
+-    """Carga datos desde un archivo JSON. Si no existe, retorna la estructura adecuada según el archivo."""
+-    if os.path.exists(archivo):
+-        with open(archivo, "r") as f:
+-            return json.load(f)
+-
+-    # Estructuras por defecto específicas para cada archivo
+-    if archivo == ARCHIVO_CLIENTES:
+-        return {"clientes": []}
+-    elif archivo == ARCHIVO_VENTAS:
+-        return {"ventas": []}
+-    else:  # ARCHIVO_PRODUCTOS
+-        return {"productos": []}
++        # Pestañas
++        self.crear_pestana_productos()
++        self.crear_pestana_ventas()
++        self.crear_pestana_clientes()
++        self.crear_pestana_reportes()
++
++    def inicializar_archivos(self):
++        if not os.path.exists(ARCHIVO_PRODUCTOS):
++            with open(ARCHIVO_PRODUCTOS, 'w') as f:
++                json.dump({"productos": []}, f)
++        if not os.path.exists(ARCHIVO_VENTAS):
++            with open(ARCHIVO_VENTAS, 'w') as f:
++                json.dump({"ventas": []}, f)
++        if not os.path.exists(ARCHIVO_PROOVEDOR):
++            with open(ARCHIVO_PROOVEDOR, 'w') as f:
++                json.dump({"clientes": []}, f)
++
++    def cargar_datos(self, archivo):
++        if os.path.exists(archivo):
++            with open(archivo, "r") as f:
++                return json.load(f)
++        if archivo == ARCHIVO_PROOVEDOR:
++            return {"clientes": []}
++        elif archivo == ARCHIVO_VENTAS:
++            return {"ventas": []}
++        else:
++            return {"productos": []}
+ 
+-def guardar_datos(datos, archivo):
+-    """Guarda datos en un archivo JSON."""
+-    f: TextIO
+-    with open(archivo, "w") as f:
+-        json.dump(datos, f, indent=4)
++    def guardar_datos(self, datos, archivo):
++        with open(archivo, "w") as f:
++            json.dump(datos, f, indent=4)
+ 
+-# --------------------------
+-# Módulo de Productos
+-# --------------------------
+-def agregar_producto():
+-    """Registra uno o más productos en el archivo, con opción de asociar proveedor."""
+-    while True:
+-        print("\n--- AGREGAR PRODUCTO ---")
+-        nombre = input("Nombre del producto: ")
+-        precio = float(input("Precio unitario: "))
+-        stock = int(input("Stock inicial: "))
+-        categoria = input("Categoría (opcional): ") or "General"
++    # --------------------------
++    # Pestaña de Productos
++    # --------------------------
++    def crear_pestana_productos(self):
++        frame = ttk.Frame(self.notebook)
++        self.notebook.add(frame, text="Productos")
++
++        # Panel izquierdo (formulario)
++        panel_izq = ttk.Frame(frame)
++        panel_izq.pack(side=tk.LEFT, fill=tk.Y, padx=10, pady=10)
+ 
+-        # Opción para asociar proveedor (cliente)
+-        proveedor_id = None
+-        if input("¿Asociar a un proveedor/cliente registrado? (s/n): ").lower() == 's': # ojo con lo que recibe
+-            listar_clientes()
+-            try:
+-                proveedor_id = int(input("ID del proveedor/cliente (0 para omitir): "))
+-                if proveedor_id == 0:
+-                    proveedor_id = None
+-            except ValueError:
+-                print("⚠️ ID inválido. Se continuará sin proveedor.")
++        ttk.Label(panel_izq, text="Gestión de Productos", font=('Arial', 12, 'bold')).pack(pady=10)
++
++        # Formulario de producto
++        ttk.Label(panel_izq, text="Nombre:").pack(anchor=tk.W)
++        self.nombre_producto = ttk.Entry(panel_izq, width=30)
++        self.nombre_producto.pack(pady=5)
++
++        ttk.Label(panel_izq, text="Precio:").pack(anchor=tk.W)
++        self.precio_producto = ttk.Entry(panel_izq, width=30)
++        self.precio_producto.pack(pady=5)
++
++        ttk.Label(panel_izq, text="Stock:").pack(anchor=tk.W)
++        self.stock_producto = ttk.Entry(panel_izq, width=30)
++        self.stock_producto.pack(pady=5)
++
++        ttk.Label(panel_izq, text="Categoría:").pack(anchor=tk.W)
++        self.categoria_producto = ttk.Entry(panel_izq, width=30)
++        self.categoria_producto.pack(pady=5)
++
++        ttk.Button(panel_izq, text="Agregar Producto", command=self.agregar_producto).pack(pady=10)
++        ttk.Button(panel_izq, text="Modificar Producto", command=self.modificar_producto).pack(pady=5)
++        ttk.Button(panel_izq, text="Eliminar Producto", command=self.eliminar_producto).pack(pady=5)
++        ttk.Button(panel_izq, text="Buscar Producto", command=self.buscar_producto).pack(pady=5)
++        ttk.Button(panel_izq, text="Alertas de Stock", command=self.alertas_stock).pack(pady=10)
++
++        # Panel derecho (lista de productos)
++        panel_der = ttk.Frame(frame)
++        panel_der.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)
++
++        ttk.Label(panel_der, text="Lista de Productos", font=('Arial', 12, 'bold')).pack(pady=10)
++
++        # Treeview para mostrar productos
++        self.tree_productos = ttk.Treeview(panel_der, columns=('ID', 'Nombre', 'Precio', 'Stock', 'Categoría'),
++                                           show='headings')
++        self.tree_productos.heading('ID', text='ID')
++        self.tree_productos.heading('Nombre', text='Nombre')
++        self.tree_productos.heading('Precio', text='Precio')
++        self.tree_productos.heading('Stock', text='Stock')
++        self.tree_productos.heading('Categoría', text='Categoría')
++
++        self.tree_productos.column('ID', width=50)
++        self.tree_productos.column('Nombre', width=150)
++        self.tree_productos.column('Precio', width=80)
++        self.tree_productos.column('Stock', width=80)
++        self.tree_productos.column('Categoría', width=150)
++
++        scrollbar = ttk.Scrollbar(panel_der, orient=tk.VERTICAL, command=self.tree_productos.yview)
++        self.tree_productos.configure(yscroll=scrollbar.set)
++        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
++        self.tree_productos.pack(fill=tk.BOTH, expand=True)
++
++        self.actualizar_lista_productos()
++
++    def actualizar_lista_productos(self):
++        for item in self.tree_productos.get_children():
++            self.tree_productos.delete(item)
++
++        datos = self.cargar_datos(ARCHIVO_PRODUCTOS)
++        for producto in datos["productos"]:
++            self.tree_productos.insert('', tk.END, values=(
++                producto['id'],
++                producto['nombre'],
++                f"${producto['precio']:.2f}",
++                producto['stock'],
++                producto['categoria']
++            ))
++
++    def agregar_producto(self):
++        nombre = self.nombre_producto.get()
++        precio = self.precio_producto.get()
++        stock = self.stock_producto.get()
++        categoria = self.categoria_producto.get() or "General"
++
++        if not nombre or not precio or not stock:
++            messagebox.showerror("Error", "Todos los campos son obligatorios excepto categoría")
++            return
++
++        try:
++            precio = float(precio)
++            stock = int(stock)
++        except ValueError:
++            messagebox.showerror("Error", "Precio y stock deben ser números válidos")
++            return
+ 
+-        datos = cargar_datos(ARCHIVO_PRODUCTOS)
++        datos = self.cargar_datos(ARCHIVO_PRODUCTOS)
+         nuevo_producto = {
+             "id": len(datos["productos"]) + 1,
+             "nombre": nombre,
+             "precio": precio,
+             "stock": stock,
+-            "categoria": categoria,
+-            "proveedor_id": proveedor_id  # Nuevo campo
++            "categoria": categoria
+         }
+ 
+         datos["productos"].append(nuevo_producto)
+-        guardar_datos(datos, ARCHIVO_PRODUCTOS)
++        self.guardar_datos(datos, ARCHIVO_PRODUCTOS)
++
++        messagebox.showinfo("Éxito", f"Producto '{nombre}' agregado correctamente")
++        self.limpiar_formulario_producto()
++        self.actualizar_lista_productos()
++
++    def limpiar_formulario_producto(self):
++        self.nombre_producto.delete(0, tk.END)
++        self.precio_producto.delete(0, tk.END)
++        self.stock_producto.delete(0, tk.END)
++        self.categoria_producto.delete(0, tk.END)
++
++    def modificar_producto(self):
++        seleccionado = self.tree_productos.focus()
++        if not seleccionado:
++            messagebox.showerror("Error", "Seleccione un producto para modificar")
++            return
++
++        item = self.tree_productos.item(seleccionado)
++        id_producto = item['values'][0]
++
++        datos = self.cargar_datos(ARCHIVO_PRODUCTOS)
++        producto = next((p for p in datos["productos"] if p["id"] == id_producto), None)
++        if not producto:
++            messagebox.showerror("Error", "Producto no encontrado")
++            return
++
++        # Crear ventana de edición
++        ventana_edicion = tk.Toplevel(self.root)
++        ventana_edicion.title("Editar Producto")
++        ventana_edicion.geometry("400x300")
++
++        ttk.Label(ventana_edicion, text="Editar Producto", font=('Arial', 12, 'bold')).pack(pady=10)
++
++        ttk.Label(ventana_edicion, text="Nombre:").pack(anchor=tk.W)
++        nombre_entry = ttk.Entry(ventana_edicion, width=30)
++        nombre_entry.insert(0, producto['nombre'])
++        nombre_entry.pack(pady=5)
++
++        ttk.Label(ventana_edicion, text="Precio:").pack(anchor=tk.W)
++        precio_entry = ttk.Entry(ventana_edicion, width=30)
++        precio_entry.insert(0, str(producto['precio']))
++        precio_entry.pack(pady=5)
++
++        ttk.Label(ventana_edicion, text="Stock:").pack(anchor=tk.W)
++        stock_entry = ttk.Entry(ventana_edicion, width=30)
++        stock_entry.insert(0, str(producto['stock']))
++        stock_entry.pack(pady=5)
++
++        ttk.Label(ventana_edicion, text="Categoría:").pack(anchor=tk.W)
++        categoria_entry = ttk.Entry(ventana_edicion, width=30)
++        categoria_entry.insert(0, producto['categoria'])
++        categoria_entry.pack(pady=5)
++
++        def guardar_cambios():
++            try:
++                producto['nombre'] = nombre_entry.get()
++                producto['precio'] = float(precio_entry.get())
++                producto['stock'] = int(stock_entry.get())
++                producto['categoria'] = categoria_entry.get()
++
++                self.guardar_datos(datos, ARCHIVO_PRODUCTOS)
++                messagebox.showinfo("Éxito", "Producto actualizado correctamente")
++                self.actualizar_lista_productos()
++                ventana_edicion.destroy()
++            except ValueError:
++                messagebox.showerror("Error", "Precio y stock deben ser números válidos")
++
++        ttk.Button(ventana_edicion, text="Guardar Cambios", command=guardar_cambios).pack(pady=20)
++
++    def eliminar_producto(self):
++        seleccionado = self.tree_productos.focus()
++        if not seleccionado:
++            messagebox.showerror("Error", "Seleccione un producto para eliminar")
++            return
++
++        item = self.tree_productos.item(seleccionado)
++        id_producto = item['values'][0]
++        nombre_producto = item['values'][1]
++
++        confirmacion = messagebox.askyesno("Confirmar", f"¿Eliminar el producto '{nombre_producto}'?")
++        if not confirmacion:
++            return
++
++        datos = self.cargar_datos(ARCHIVO_PRODUCTOS)
++        datos["productos"] = [p for p in datos["productos"] if p["id"] != id_producto]
++
++        # Reindexar IDs
++        for i, producto in enumerate(datos["productos"], start=1):
++            producto["id"] = i
++
++        self.guardar_datos(datos, ARCHIVO_PRODUCTOS)
++        messagebox.showinfo("Éxito", "Producto eliminado correctamente")
++        self.actualizar_lista_productos()
++
++    def buscar_producto(self):
++        termino = simpledialog.askstring("Buscar Producto", "Ingrese nombre o categoría:")
++        if not termino:
++            return
++
++        termino = termino.lower()
++        datos = self.cargar_datos(ARCHIVO_PRODUCTOS)
++        resultados = [
++            p for p in datos["productos"]
++            if termino in p["nombre"].lower() or termino in p["categoria"].lower()
++        ]
+ 
+-        # Mostrar info del proveedor si existe
+-        if proveedor_id:
+-            datos_clientes = cargar_datos(ARCHIVO_CLIENTES)
+-            proveedor = next((c for c in datos_clientes["clientes"] if c["id"] == proveedor_id), None)
+-            if proveedor:
+-                print(f"✅ Producto '{nombre}' agregado con proveedor: {proveedor['nombre']}")
+-            else:
+-                print(f"✅ Producto '{nombre}' agregado (proveedor ID {proveedor_id} no encontrado)")
+-        else:
+-            print(f"✅ Producto '{nombre}' agregado!")
++        if not resultados:
++            messagebox.showinfo("Resultados", "No se encontraron coincidencias")
++            return
+ 
+-        if input("¿Agregar otro producto? (s/n): ").lower() != 's':
+-            break
++        # Mostrar resultados en una nueva ventana
++        ventana_resultados = tk.Toplevel(self.root)
++        ventana_resultados.title("Resultados de Búsqueda")
++        ventana_resultados.geometry("600x400")
+ 
++        ttk.Label(ventana_resultados, text=f"Resultados para '{termino}'", font=('Arial', 12, 'bold')).pack(pady=10)
+ 
+-def listar_productos():
+-    """Muestra todos los productos en stock con información de cliente/proveedor asociado."""
+-    datos = cargar_datos(ARCHIVO_PRODUCTOS)
+-    productos = datos["productos"]
+-    datos_clientes = cargar_datos(ARCHIVO_CLIENTES)
+-    clientes = datos_clientes["clientes"]
++        tree = ttk.Treeview(ventana_resultados, columns=('ID', 'Nombre', 'Precio', 'Stock', 'Categoría'),
++                            show='headings')
++        tree.heading('ID', text='ID')
++        tree.heading('Nombre', text='Nombre')
++        tree.heading('Precio', text='Precio')
++        tree.heading('Stock', text='Stock')
++        tree.heading('Categoría', text='Categoría')
+ 
+-    print("\n--- LISTA DE PRODUCTOS ---")
+-    for producto in productos:
+-        # Buscar el cliente/proveedor asociado si existe
+-        nombre_cliente = "N/A"
+-        if "proveedor_id" in producto and producto["proveedor_id"]:
+-            cliente = next((c for c in clientes if c["id"] == producto["proveedor_id"]), None)
+-            nombre_cliente = cliente["nombre"] if cliente else "Proveedor no encontrado"
++        for producto in resultados:
++            tree.insert('', tk.END, values=(
++                producto['id'],
++                producto['nombre'],
++                f"${producto['precio']:.2f}",
++                producto['stock'],
++                producto['categoria']
++            ))
+ 
+-        print(
+-            f"ID: {producto['id']} | {producto['nombre']} | ${producto['precio']:.2f} | Stock: {producto['stock']} | Proveedor: {nombre_cliente}")
+-# --------------------------
+-# Módulo de Ventas
+-# --------------------------
+-def nueva_venta():
+-    """Procesa una venta con opción de cliente, descuentos y validación mejorada."""
+-    print("\n--- NUEVA VENTA ---")
++        scrollbar = ttk.Scrollbar(ventana_resultados, orient=tk.VERTICAL, command=tree.yview)
++        tree.configure(yscroll=scrollbar.set)
++        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
++        tree.pack(fill=tk.BOTH, expand=True)
++
++    def alertas_stock(self):
++        umbral = simpledialog.askinteger("Alertas de Stock", "Ingrese el stock mínimo para alerta:")
++        if umbral is None:
++            return
++
++        datos = self.cargar_datos(ARCHIVO_PRODUCTOS)
++        productos_bajos = [p for p in datos["productos"] if p["stock"] < umbral]
++
++        if not productos_bajos:
++            messagebox.showinfo("Alertas de Stock", f"Todos los productos tienen stock mayor a {umbral}")
++            return
++
++        ventana_alertas = tk.Toplevel(self.root)
++        ventana_alertas.title(f"Productos con stock menor a {umbral}")
++        ventana_alertas.geometry("500x300")
++
++        ttk.Label(ventana_alertas, text=f"Productos con stock menor a {umbral}", font=('Arial', 12, 'bold')).pack(
++            pady=10)
++
++        frame = ttk.Frame(ventana_alertas)
++        frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
++
++        for producto in productos_bajos:
++            ttk.Label(frame, text=f"{producto['nombre']} - Stock: {producto['stock']}").pack(anchor=tk.W)
++
++    # --------------------------
++    # Pestaña de Ventas
++    # --------------------------
++    def crear_pestana_ventas(self):
++        frame = ttk.Frame(self.notebook)
++        self.notebook.add(frame, text="Ventas")
++
++        # Panel izquierdo (nueva venta)
++        panel_izq = ttk.Frame(frame)
++        panel_izq.pack(side=tk.LEFT, fill=tk.Y, padx=10, pady=10)
++
++        ttk.Label(panel_izq, text="Nueva Venta", font=('Arial', 12, 'bold')).pack(pady=10)
++
++        # Lista de productos en venta
++        self.lista_venta = tk.Listbox(panel_izq, width=40, height=15)
++        self.lista_venta.pack(pady=10)
++
++        # Total de la venta
++        self.total_venta = tk.StringVar()
++        self.total_venta.set("Total: $0.00")
++        ttk.Label(panel_izq, textvariable=self.total_venta, font=('Arial', 12, 'bold')).pack(pady=5)
++
++        # Botones
++        ttk.Button(panel_izq, text="Agregar Producto", command=self.agregar_a_venta).pack(pady=5, fill=tk.X)
++        ttk.Button(panel_izq, text="Eliminar Producto", command=self.eliminar_de_venta).pack(pady=5, fill=tk.X)
++        ttk.Button(panel_izq, text="Aplicar Descuento", command=self.aplicar_descuento).pack(pady=5, fill=tk.X)
++        ttk.Button(panel_izq, text="Finalizar Venta", command=self.finalizar_venta).pack(pady=10, fill=tk.X)
++        ttk.Button(panel_izq, text="Cancelar Venta", command=self.cancelar_venta).pack(pady=5, fill=tk.X)
++
++        # Panel derecho (historial de ventas)
++        panel_der = ttk.Frame(frame)
++        panel_der.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)
++
++        ttk.Label(panel_der, text="Historial de Ventas", font=('Arial', 12, 'bold')).pack(pady=10)
++
++        # Filtros
++        frame_filtros = ttk.Frame(panel_der)
++        frame_filtros.pack(fill=tk.X, pady=5)
++
++        ttk.Label(frame_filtros, text="Filtrar por fecha:").pack(side=tk.LEFT)
++        self.fecha_inicio = ttk.Entry(frame_filtros, width=10)
++        self.fecha_inicio.pack(side=tk.LEFT, padx=5)
++        ttk.Label(frame_filtros, text="a").pack(side=tk.LEFT)
++        self.fecha_fin = ttk.Entry(frame_filtros, width=10)
++        self.fecha_fin.pack(side=tk.LEFT, padx=5)
++        ttk.Button(frame_filtros, text="Filtrar", command=self.filtrar_ventas).pack(side=tk.LEFT, padx=10)
++        ttk.Button(frame_filtros, text="Mostrar Todas", command=self.mostrar_todas_ventas).pack(side=tk.LEFT)
++
++        # Treeview para historial de ventas
++        self.tree_ventas = ttk.Treeview(panel_der, columns=('ID', 'Fecha', 'Total', 'Productos'), show='headings')
++        self.tree_ventas.heading('ID', text='ID')
++        self.tree_ventas.heading('Fecha', text='Fecha')
++        self.tree_ventas.heading('Total', text='Total')
++        self.tree_ventas.heading('Productos', text='Productos')
++
++        self.tree_ventas.column('ID', width=50)
++        self.tree_ventas.column('Fecha', width=120)
++        self.tree_ventas.column('Total', width=80)
++        self.tree_ventas.column('Productos', width=300)
++
++        scrollbar = ttk.Scrollbar(panel_der, orient=tk.VERTICAL, command=self.tree_ventas.yview)
++        self.tree_ventas.configure(yscroll=scrollbar.set)
++        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
++        self.tree_ventas.pack(fill=tk.BOTH, expand=True)
++
++        # Variables para la venta actual
++        self.venta_actual = []
++        self.descuento = 0.0
++
++        self.mostrar_todas_ventas()
++
++    def nueva_venta():
++        """Procesa una venta con opción de cliente, descuentos y validación mejorada."""
++        print("\n--- NUEVA VENTA ---")
+ 
+-    # Cargar datos
+-    datos_productos = cargar_datos(ARCHIVO_PRODUCTOS)
+-    datos_ventas = cargar_datos(ARCHIVO_VENTAS)
+-    datos_clientes = cargar_datos(ARCHIVO_CLIENTES) if os.path.exists(ARCHIVO_CLIENTES) else {"clientes": []}
++        # Cargar datos
++        datos_productos = cargar_datos(ARCHIVO_PRODUCTOS)
++        datos_ventas = cargar_datos(ARCHIVO_VENTAS)
++        datos_proovdor = cargar_datos(ARCHIVO_PROOVEDOR) if os.path.exists(ARCHIVO_PROOVEDOR) else {"clientes": []}
+ 
+-    # Validar productos
+-    if not datos_productos["productos"]:
+-        print("❌ No hay productos registrados.")
+-        return
++        # Validar productos
++        if not datos_productos["productos"]:
++            print("❌ No hay productos registrados.")
++            return
+ 
+-    # Selección de cliente (opcional)
+-    cliente_id = None
+-    if input("¿Asociar a cliente registrado? (s/n): ").lower() == 's':
+-        listar_clientes()
+-        try:
+-            cliente_id = int(input("ID del cliente (0 para omitir): "))
+-            if cliente_id != 0 and not any(c["id"] == cliente_id for c in datos_clientes["clientes"]):
+-                print("⚠️ ID no encontrado. Continuando sin cliente.")
+-                cliente_id = None
+-        except ValueError:
+-            print("⚠️ Entrada inválida. Continuando sin cliente.")
++        # Selección de cliente (opcional)
++        cliente_id = None
++        if input("¿Asociar a cliente registrado? (s/n): ").lower() == 's':
++            listar_proovedor()
++            try:
++                cliente_id = int(input("ID del cliente (0 para omitir): "))
++                if cliente_id != 0 and not any(c["id"] == cliente_id for c in datos_proovdor["clientes"]):
++                    print("⚠️ ID no encontrado. Continuando sin cliente.")
++                    cliente_id = None
++            except ValueError:
++                print("⚠️ Entrada inválida. Continuando sin cliente.")
+ 
+-    # Proceso de venta
+-    listar_productos()
+-    productos_vendidos = []
+-    total = 0.0
++        # Proceso de venta
++        listar_productos()
++        productos_vendidos = []
++        total = 0.0
+ 
+-    while True:
+-        try:
+-            id_producto = int(input("\nID del producto (0 para finalizar): "))
+-            if id_producto == 0:
+-                break
++        while True:
++            try:
++                id_producto = int(input("\nID del producto (0 para finalizar): "))
++                if id_producto == 0:
++                    break
+ 
+-            producto = next((p for p in datos_productos["productos"] if p["id"] == id_producto), None)
+-            if not producto:
+-                print("❌ Producto no encontrado.")
+-                continue
++                producto = next((p for p in datos_productos["productos"] if p["id"] == id_producto), None)
++                if not producto:
++                    print("❌ Producto no encontrado.")
++                    continue
+ 
+-            cantidad = float(input(f"Cantidad de '{producto['nombre']}': "))
+-            if cantidad <= 0:
+-                print("❌ La cantidad debe ser mayor a 0.")
+-                continue
+-            if cantidad > producto["stock"]:
+-                print(f"❌ Stock insuficiente. Disponible: {producto['stock']}")
+-                continue
++                cantidad = float(input(f"Cantidad de '{producto['nombre']}' (ej. 0.5, 1.25): "))  # Cambiado a float
++                if cantidad <= 0:
++                    print("❌ La cantidad debe ser mayor a 0.")
++                    continue
++                if cantidad > producto["stock"]:
++                    print(f"❌ Stock insuficiente. Disponible: {producto['stock']}")
++                    continue
+ 
+-            # Actualizar datos
+-            producto["stock"] -= cantidad
+-            subtotal = producto["precio"] * cantidad
+-            total += subtotal
+-            productos_vendidos.append({
+-                "id": producto["id"],
+-                "nombre": producto["nombre"],
+-                "precio_unitario": producto["precio"],
+-                "cantidad": cantidad,
+-                "subtotal": subtotal
+-            })
+-            print(f"➕ {producto['nombre']} x{cantidad} | ${subtotal:.2f}")
++                # Actualizar datos
++                producto["stock"] -= cantidad
++                subtotal = producto["precio"] * cantidad
++                total += subtotal
++                productos_vendidos.append({
++                    "id": producto["id"],
++                    "nombre": producto["nombre"],
++                    "precio_unitario": producto["precio"],
++                    "cantidad": cantidad,
++                    "subtotal": subtotal
++                })
++                print(f"➕ {producto['nombre']} x{cantidad} | ${subtotal:.2f}")
+ 
+-        except ValueError:
+-            print("❌ Entrada inválida. Use números.")
++            except ValueError:
++                print("❌ Entrada inválida. Use números (ej. 0.5, 1.25).")
++
++        # Resto de la función permanece igual...
++        # ... (validación de venta, descuentos, confirmación, etc.)
++
++        def agregar_producto_seleccionado():
++            seleccion = lista_productos.curselection()
++            if not seleccion:
++                messagebox.showerror("Error", "Seleccione un producto")
++                return
++
++            try:
++                cantidad = float(cantidad.get())  # Cambiado a float para decimales
++                if cantidad <= 0:
++                    messagebox.showerror("Error", "La cantidad debe ser mayor a 0")
++                    return
++            except ValueError:
++                messagebox.showerror("Error", "Ingrese una cantidad válida (ej. 0.5, 1, 1.25)")
++                return
++
++            producto = producto[seleccion[0]]
++            if cantidad > producto["stock"]:
++                messagebox.showerror("Error", f"Stock insuficiente. Disponible: {producto['stock']}")
++                return
++
++            # Verificar si el producto ya está en la venta
++            for item in self.venta_actual:
++                if item["id"] == producto["id"]:
++                    item["cantidad"] += cantidad
++                    break
++            else:
++                self.venta_actual.append({
++                    "id": producto["id"],
++                    "nombre": producto["nombre"],
++                    "precio": producto["precio"],
++                    "cantidad": cantidad
++                })
++
++            self.actualizar_lista_venta()
++            ventana_producto.destroy()
++
++        ttk.Button(ventana_producto, text="Agregar", command=agregar_producto_seleccionado).pack(pady=10)
++
++        def agregar_producto_seleccionado():
++            seleccion = lista_productos.curselection()
++            if not seleccion:
++                messagebox.showerror("Error", "Seleccione un producto")
++                return
++
++            try:
++                cantidad = int(cantidad_entry.get())
++                if cantidad <= 0:
++                    messagebox.showerror("Error", "La cantidad debe ser mayor a 0")
++                    return
++            except ValueError:
++                messagebox.showerror("Error", "Ingrese una cantidad válida")
++                return
++
++            producto = productos_disponibles[seleccion[0]]
++            if cantidad > producto["stock"]:
++                messagebox.showerror("Error", f"Stock insuficiente. Disponible: {producto['stock']}")
++                return
+ 
+-    # Validar venta
+-    if not productos_vendidos:
+-        print("❌ Venta cancelada (no hay productos).")
+-        return
++            # Verificar si el producto ya está en la venta
++            for item in self.venta_actual:
++                if item["id"] == producto["id"]:
++                    item["cantidad"] += cantidad
++                    break
++            else:
++                self.venta_actual.append({
++                    "id": producto["id"],
++                    "nombre": producto["nombre"],
++                    "precio": producto["precio"],
++                    "cantidad": cantidad
++                })
++
++            self.actualizar_lista_venta()
++            ventana_producto.destroy()
++
++        ttk.Button(ventana_producto, text="Agregar", command=agregar_producto_seleccionado).pack(pady=10)
++
++    def eliminar_de_venta(self):
++        seleccion = self.lista_venta.curselection()
++        if not seleccion:
++            messagebox.showerror("Error", "Seleccione un producto para eliminar")
++            return
++
++        del self.venta_actual[seleccion[0]]
++        self.actualizar_lista_venta()
++
++    def actualizar_lista_venta(self):
++        self.lista_venta.delete(0, tk.END)
++        total = 0.0
++
++        for producto in self.venta_actual:
++            subtotal = producto["precio"] * producto["cantidad"]
++            total += subtotal
++            self.lista_venta.insert(tk.END, f"{producto['nombre']} x{producto['cantidad']} - ${subtotal:.2f}")
++
++        total = max(0, total - self.descuento)
++        self.total_venta.set(f"Total: ${total:.2f}")
++
++    def aplicar_descuento(self):
++        if not self.venta_actual:
++            messagebox.showerror("Error", "No hay productos en la venta")
++            return
+ 
+-    # Aplicar descuento (opcional)
+-    if input("\n¿Aplicar descuento? (s/n): ").lower() == 's':
+-        try:
+-            tipo = input("Tipo (% o monto): ").lower()
+-            if tipo == '%':
+-                porcentaje = float(input("Porcentaje (ej. 10): "))
+-                descuento = total * (porcentaje / 100)
+-            else:
+-                descuento = float(input("Monto (ej. 5.00): "))
+-            total = max(0, total - descuento)
+-            print(f"🎫 Descuento aplicado: ${descuento:.2f}")
+-        except ValueError:
+-            print("⚠️ Descuento no válido. Ignorando.")
++        ventana_descuento = tk.Toplevel(self.root)
++        ventana_descuento.title("Aplicar Descuento")
++        ventana_descuento.geometry("300x200")
++
++        ttk.Label(ventana_descuento, text="Tipo de descuento:").pack(pady=10)
++
++        tipo_var = tk.StringVar(value="%")
++
++        ttk.Radiobutton(ventana_descuento, text="Porcentaje", variable=tipo_var, value="%").pack()
++        ttk.Radiobutton(ventana_descuento, text="Monto fijo", variable=tipo_var, value="$").pack()
++
++        ttk.Label(ventana_descuento, text="Valor:").pack(pady=10)
++        valor_entry = ttk.Entry(ventana_descuento)
++        valor_entry.pack()
++
++        def aplicar():
++            try:
++                valor = float(valor_entry.get())
++                if tipo_var.get() == "%":
++                    self.descuento = sum(p["precio"] * p["cantidad"] for p in self.venta_actual) * (valor / 100)
++                else:
++                    self.descuento = valor
++
++                self.actualizar_lista_venta()
++                ventana_descuento.destroy()
++                messagebox.showinfo("Éxito", f"Descuento aplicado: ${self.descuento:.2f}")
++            except ValueError:
++                messagebox.showerror("Error", "Ingrese un valor numérico válido")
+ 
+-    # Confirmación final
+-    print(f"\n🛒 TOTAL A PAGAR: ${total:.2f}")
+-    if input("¿Confirmar venta? (s/n): ").lower() != 's':
+-        print("❌ Venta cancelada.")
+-        return
++        ttk.Button(ventana_descuento, text="Aplicar", command=aplicar).pack(pady=20)
++
++    def finalizar_venta(self):
++        if not self.venta_actual:
++            messagebox.showerror("Error", "No hay productos en la venta")
++            return
+ 
+-    # Guardar venta
+-    nueva_venta = {
+-        "id": len(datos_ventas["ventas"]) + 1,
+-        "fecha": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+-        "total": total,
+-        "cliente_id": cliente_id,
+-        "productos": productos_vendidos
+-    }
+-    datos_ventas["ventas"].append(nueva_venta)
++        # Preguntar por cliente
++        cliente_id = None
++        datos_clientes = self.cargar_datos(ARCHIVO_PROOVEDOR)
++        if datos_clientes["clientes"] and messagebox.askyesno("Cliente", "¿Asociar a cliente registrado?"):
++            ventana_cliente = tk.Toplevel(self.root)
++            ventana_cliente.title("Seleccionar Cliente")
++            ventana_cliente.geometry("400x300")
++
++            ttk.Label(ventana_cliente, text="Seleccione un cliente:").pack(pady=10)
++
++            tree = ttk.Treeview(ventana_cliente, columns=('ID', 'Nombre', 'Teléfono'), show='headings')
++            tree.heading('ID', text='ID')
++            tree.heading('Nombre', text='Nombre')
++            tree.heading('Teléfono', text='Teléfono')
++
++            for cliente in datos_clientes["clientes"]:
++                tree.insert('', tk.END, values=(cliente['id'], cliente['nombre'], cliente['telefono']))
++
++            scrollbar = ttk.Scrollbar(ventana_cliente, orient=tk.VERTICAL, command=tree.yview)
++            tree.configure(yscroll=scrollbar.set)
++            scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
++            tree.pack(fill=tk.BOTH, expand=True)
++
++            def seleccionar_cliente():
++                seleccion = tree.focus()
++                if not seleccion:
++                    messagebox.showerror("Error", "Seleccione un cliente")
++                    return
++
++                nonlocal cliente_id
++                cliente_id = tree.item(seleccion)['values'][0]
++                ventana_cliente.destroy()
++
++            ttk.Button(ventana_cliente, text="Seleccionar", command=seleccionar_cliente).pack(pady=10)
++            ventana_cliente.wait_window()
++
++        # Calcular total
++        subtotal = sum(p["precio"] * p["cantidad"] for p in self.venta_actual)
++        total = max(0, subtotal - self.descuento)
++
++        # Confirmar venta
++        confirmacion = messagebox.askyesno("Confirmar Venta", f"Total a cobrar: ${total:.2f}\n¿Confirmar venta?")
++        if not confirmacion:
++            return
++
++        # Registrar venta
++        datos_ventas = self.cargar_datos(ARCHIVO_VENTAS)
++        nueva_venta = {
++            "id": len(datos_ventas["ventas"]) + 1,
++            "fecha": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
++            "total": total,
++            "descuento": self.descuento,
++            "cliente_id": cliente_id,
++            "productos": [{
++                "id": p["id"],
++                "nombre": p["nombre"],
++                "precio_unitario": p["precio"],
++                "cantidad": p["cantidad"],
++                "subtotal": p["precio"] * p["cantidad"]
++            } for p in self.venta_actual]
++        }
++
++        datos_ventas["ventas"].append(nueva_venta)
++        self.guardar_datos(datos_ventas, ARCHIVO_VENTAS)
++
++        # Actualizar stock de productos
++        datos_productos = self.cargar_datos(ARCHIVO_PRODUCTOS)
++        for producto_venta in self.venta_actual:
++            for producto in datos_productos["productos"]:
++                if producto["id"] == producto_venta["id"]:
++                    producto["stock"] -= producto_venta["cantidad"]
++                    break
+ 
+-    # Actualizar historial del cliente
+-    if cliente_id:
+-        cliente = next(c for c in datos_clientes["clientes"] if c["id"] == cliente_id)
+-        cliente["compras"].append(nueva_venta["id"])
+-
+-    # Guardar todos los datos
+-    guardar_datos(datos_productos, ARCHIVO_PRODUCTOS)
+-    guardar_datos(datos_ventas, ARCHIVO_VENTAS)
+-    if cliente_id:
+-        guardar_datos(datos_clientes, ARCHIVO_CLIENTES)
+-
+-    print(f"\n✅ Venta registrada (ID: {nueva_venta['id']})")
+-    if cliente_id:
+-        cliente = next(c for c in datos_clientes["clientes"] if c["id"] == cliente_id)
+-        print(f"📝 Cliente: {cliente['nombre']} (ID: {cliente_id})")
+-
+-# Buscar productos nombre o categoria
+-def buscar_producto():
+-    """Busca productos por nombre o categoría y muestra resultados."""
+-    print("\n--- BUSCAR PRODUCTO ---")
+-    termino = input("Ingrese nombre o categoría del producto: ").lower()
+-    datos = cargar_datos(ARCHIVO_PRODUCTOS)
+-    resultados = [
+-        p for p in datos["productos"]
+-        if termino in p["nombre"].lower() or termino in p["categoria"].lower()
+-    ]
+-
+-    if not resultados:
+-        print("❌ No se encontraron coincidencias.")
+-    else:
+-        print("\n--- RESULTADOS ---")
+-        for producto in resultados:
+-            print(f"ID: {producto['id']} | {producto['nombre']} | ${producto['precio']:.2f} | Stock: {producto['stock']}")
+-
+-# modificar productos
+-def modificar_producto():
+-    """Edita los detalles de un producto existente."""
+-    print("\n--- MODIFICAR PRODUCTO ---")
+-    listar_productos()
+-    id_producto = int(input("ID del producto a modificar: "))
+-    datos = cargar_datos(ARCHIVO_PRODUCTOS)
+-
+-    producto = next((p for p in datos["productos"] if p["id"] == id_producto), None)
+-    if not producto:
+-        print("❌ ID no válido.")
+-        return
+-
+-    print(f"\nEditando: {producto['nombre']} (Stock: {producto['stock']})")
+-    producto["nombre"] = input(f"Nuevo nombre ({producto['nombre']}): ") or producto["nombre"]
+-    producto["precio"] = float(input(f"Nuevo precio ({producto['precio']:.2f}): ") or producto["precio"])
+-    producto["stock"] = int(input(f"Nuevo stock ({producto['stock']}): ") or producto["stock"])
+-    producto["categoria"] = input(f"Nueva categoría ({producto['categoria']}): ") or producto["categoria"]
++        self.guardar_datos(datos_productos, ARCHIVO_PRODUCTOS)
++
++        # Actualizar historial del cliente si existe
++        if cliente_id:
++            for cliente in datos_clientes["clientes"]:
++                if cliente["id"] == cliente_id:
++                    cliente["compras"].append(nueva_venta["id"])
++                    break
++            self.guardar_datos(datos_clientes, ARCHIVO_PROOVEDOR)
+ 
+-    guardar_datos(datos, ARCHIVO_PRODUCTOS)
+-    print("✅ Producto actualizado!")
++        messagebox.showinfo("Éxito", f"Venta registrada (ID: {nueva_venta['id']})")
++        self.cancelar_venta()
++        self.mostrar_todas_ventas()
++        self.actualizar_lista_productos()
+ 
+-#Eliminar Productos
+-def eliminar_producto():
+-    """Elimina un producto del archivo y reindexa los IDs."""
+-    print("\n--- ELIMINAR PRODUCTO ---")
+-    listar_productos()
+-    id_producto = int(input("ID del producto a eliminar: "))
+-    datos = cargar_datos(ARCHIVO_PRODUCTOS)
++    def cancelar_venta(self):
++        self.venta_actual = []
++        self.descuento = 0.0
++        self.actualizar_lista_venta()
+ 
+-    producto = next((p for p in datos["productos"] if p["id"] == id_producto), None)
+-    if not producto:
+-        print("❌ ID no válido.")
+-        return
++    def filtrar_ventas(self):
++        fecha_inicio = self.fecha_inicio.get()
++        fecha_fin = self.fecha_fin.get()
+ 
+-    confirmacion = input(f"¿Eliminar '{producto['nombre']}'? (s/n): ").lower()
+-    if confirmacion == 's':
+-        # Elimina el producto
+-        datos["productos"] = [p for p in datos["productos"] if p["id"] != id_producto]
+-
+-    #problema resuelto con el else
+-    else:
+-        print("Producto no eliminado.")
+-        return
++        if not fecha_inicio or not fecha_fin:
++            messagebox.showerror("Error", "Ingrese ambas fechas para filtrar")
++            return
+ 
+-    #  Reindexa los IDs restantes
+-    for i, producto in enumerate(datos["productos"], start=1):
+-        producto["id"] = i
++        datos = self.cargar_datos(ARCHIVO_VENTAS)
++        ventas_filtradas = [
++            v for v in datos["ventas"]
++            if fecha_inicio <= v["fecha"][:10] <= fecha_fin
++        ]
++
++        self.mostrar_ventas(ventas_filtradas)
++
++    def mostrar_todas_ventas(self):
++        datos = self.cargar_datos(ARCHIVO_VENTAS)
++        self.mostrar_ventas(datos["ventas"])
++
++    def mostrar_ventas(self, ventas):
++        for item in self.tree_ventas.get_children():
++            self.tree_ventas.delete(item)
++
++        for venta in ventas:
++            productos = ", ".join(f"{p['nombre']} x{p['cantidad']}" for p in venta["productos"])
++            self.tree_ventas.insert('', tk.END, values=(
++                venta['id'],
++                venta['fecha'],
++                f"${venta['total']:.2f}",
++                productos
++            ))
++
++    # --------------------------
++    # Pestaña de Clientes
++    # --------------------------
++    def crear_pestana_clientes(self):
++        frame = ttk.Frame(self.notebook)
++        self.notebook.add(frame, text="Clientes")
++
++        # Panel izquierdo (formulario)
++        panel_izq = ttk.Frame(frame)
++        panel_izq.pack(side=tk.LEFT, fill=tk.Y, padx=10, pady=10)
++
++        ttk.Label(panel_izq, text="Gestión de Clientes", font=('Arial', 12, 'bold')).pack(pady=10)
++
++        # Formulario de cliente
++        ttk.Label(panel_izq, text="Nombre:").pack(anchor=tk.W)
++        self.nombre_cliente = ttk.Entry(panel_izq, width=30)
++        self.nombre_cliente.pack(pady=5)
++
++        ttk.Label(panel_izq, text="Teléfono:").pack(anchor=tk.W)
++        self.telefono_cliente = ttk.Entry(panel_izq, width=30)
++        self.telefono_cliente.pack(pady=5)
++
++        ttk.Label(panel_izq, text="Dirección:").pack(anchor=tk.W)
++        self.direccion_cliente = ttk.Entry(panel_izq, width=30)
++        self.direccion_cliente.pack(pady=5)
+ 
+-    guardar_datos(datos, ARCHIVO_PRODUCTOS)
+-    print("✅ Producto eliminado y IDs actualizados!")
++        ttk.Button(panel_izq, text="Registrar Cliente", command=self.registrar_cliente).pack(pady=10)
++        ttk.Button(panel_izq, text="Ver Historial", command=self.ver_historial_cliente).pack(pady=5)
+ 
+-#Alertas de stock
+-def alertas_stock():
+-    """Muestra productos con stock bajo."""
+-    umbral = int(input("\nStock mínimo para alerta (ej. 10): "))
+-    datos = cargar_datos(ARCHIVO_PRODUCTOS)
+-    productos_bajos = [p for p in datos["productos"] if p["stock"] < umbral]
++        # Panel derecho (lista de clientes)
++        panel_der = ttk.Frame(frame)
++        panel_der.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)
+ 
+-    print(f"\n--- PRODUCTOS CON STOCK menor a {umbral} ---")
+-    if not productos_bajos:
+-        print("✅ Todos los productos están bien surtidos.")
+-    else:
+-        for producto in productos_bajos:
+-            print(f"{producto['nombre']} | Stock: {producto['stock']}")
++        ttk.Label(panel_der, text="Lista de Clientes", font=('Arial', 12, 'bold')).pack(pady=10)
+ 
++        # Treeview para clientes
++        self.tree_clientes = ttk.Treeview(panel_der, columns=('ID', 'Nombre', 'Teléfono', 'Dirección'), show='headings')
++        self.tree_clientes.heading('ID', text='ID')
++        self.tree_clientes.heading('Nombre', text='Nombre')
++        self.tree_clientes.heading('Teléfono', text='Teléfono')
++        self.tree_clientes.heading('Dirección', text='Dirección')
+ 
+-#-----------------------------------------------------------------------------------------------------------------------
+-# Historial de ventas
+-def historial_ventas():
+-    """Muestra ventas filtradas por fecha y calcula totales."""
+-    print("\n--- HISTORIAL DE VENTAS ---")
+-    print("1. Ver todas las ventas")
+-    print("2. Filtrar por rango de fechas")
+-    opcion = input("Seleccione una opción (1/2): ")
++        scrollbar = ttk.Scrollbar(panel_der, orient=tk.VERTICAL, command=self.tree_clientes.yview)
++        self.tree_clientes.configure(yscroll=scrollbar.set)
++        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
++        self.tree_clientes.pack(fill=tk.BOTH, expand=True)
+ 
+-    datos = cargar_datos(ARCHIVO_VENTAS)
+-    if not datos["ventas"]:
+-        print("❌ No hay ventas registradas.")
+-        return
++        self.actualizar_lista_clientes()
++
++    def actualizar_lista_clientes(self):
++        for item in self.tree_clientes.get_children():
++            self.tree_clientes.delete(item)
++
++        datos = self.cargar_datos(ARCHIVO_PROOVEDOR)
++        for cliente in datos["clientes"]:
++            self.tree_clientes.insert('', tk.END, values=(
++                cliente['id'],
++                cliente['nombre'],
++                cliente['telefono'],
++                cliente.get('direccion', '')
++            ))
++
++    def registrar_cliente(self):
++        nombre = self.nombre_cliente.get()
++        telefono = self.telefono_cliente.get()
++        direccion = self.direccion_cliente.get()
++
++        if not nombre or not telefono:
++            messagebox.showerror("Error", "Nombre y teléfono son obligatorios")
++            return
+ 
+-    ventas_filtradas = []
+-    if opcion == "1":
+-        ventas_filtradas = datos["ventas"]
+-    elif opcion == "2":
+-        fecha_inicio = input("Fecha inicial (YYYY-MM-DD): ")
+-        fecha_fin = input("Fecha final (YYYY-MM-DD): ")
+-        for venta in datos["ventas"]:
+-            if fecha_inicio <= venta["fecha"][:10] <= fecha_fin:
+-                ventas_filtradas.append(venta)
+-    else:
+-        print("❌ Opción inválida.")
+-        return
+-
+-    if not ventas_filtradas:
+-        print("❌ No hay ventas en el rango seleccionado.")
+-        return
+-
+-    print("\n--- RESULTADOS ---")
+-    total_periodo = 0.0
+-    for venta in ventas_filtradas:
+-        print(f"\n📅 Fecha: {venta['fecha']} | Total: ${venta['total']:.2f}")
+-        print("📦 Productos:")
+-        for producto in venta["productos"]:
+-            print(f"   - {producto['nombre']} x{producto['cantidad']} (${producto['subtotal']:.2f})")
+-        total_periodo += venta["total"]
+-
+-    print(f"\n💰 TOTAL DEL PERÍODO: ${total_periodo:.2f}")
+-#-----------------------------------------------------------------------------------------------------------------------
+-#Registrar Cliente
+-def registrar_cliente():
+-    """Registra un nuevo cliente en el sistema."""
+-    print("\n--- REGISTRAR CLIENTE ---")
+-    nombre = input("Nombre completo: ")
+-    telefono = input("Teléfono: ")
+-    direccion = input("Dirección (opcional): ")
+-
+-    datos = cargar_datos(ARCHIVO_CLIENTES)
+-    nuevo_cliente = {
+-        "id": len(datos["clientes"]) + 1,
+-        "nombre": nombre,
+-        "telefono": telefono,
+-        "direccion": direccion,
+-        "compras": []  # Historial de IDs de ventas
+-    }
+-    datos["clientes"].append(nuevo_cliente)
+-    guardar_datos(datos, ARCHIVO_CLIENTES)
+-    print(f"✅ Cliente '{nombre}' registrado (ID: {nuevo_cliente['id']})")
++        datos = self.cargar_datos(ARCHIVO_PROOVEDOR)
++        nuevo_cliente = {
++            "id": len(datos["clientes"]) + 1,
++            "nombre": nombre,
++            "telefono": telefono,
++            "direccion": direccion,
++            "compras": []
++        }
++
++        datos["clientes"].append(nuevo_cliente)
++        self.guardar_datos(datos, ARCHIVO_PROOVEDOR)
++
++        messagebox.showinfo("Éxito", f"Cliente '{nombre}' registrado correctamente")
++        self.limpiar_formulario_cliente()
++        self.actualizar_lista_clientes()
+ 
+-#Listar Clientes
+-def listar_clientes():
+-    """Muestra todos los clientes registrados."""
+-    datos = cargar_datos(ARCHIVO_CLIENTES)
+-    print("\n--- CLIENTES REGISTRADOS ---")
+-    for cliente in datos["clientes"]:
+-        print(f"ID: {cliente['id']} | {cliente['nombre']} | Tel: {cliente['telefono']}")
++    def limpiar_formulario_cliente(self):
++        self.nombre_cliente.delete(0, tk.END)
++        self.telefono_cliente.delete(0, tk.END)
++        self.direccion_cliente.delete(0, tk.END)
+ 
+-def historial_cliente():
+-    """Muestra las compras de un cliente específico."""
+-    listar_clientes()
+-    id_cliente = int(input("\nID del cliente a consultar: "))
+-    datos_clientes = cargar_datos(ARCHIVO_CLIENTES)
+-    datos_ventas = cargar_datos(ARCHIVO_VENTAS)
++    def ver_historial_cliente(self):
++        seleccionado = self.tree_clientes.focus()
++        if not seleccionado:
++            messagebox.showerror("Error", "Seleccione un cliente para ver su historial")
++            return
++
++        item = self.tree_clientes.item(seleccionado)
++        id_cliente = item['values'][0]
++        nombre_cliente = item['values'][1]
++
++        datos_clientes = self.cargar_datos(ARCHIVO_PROOVEDOR)
++        datos_ventas = self.cargar_datos(ARCHIVO_VENTAS)
+ 
+-    cliente = next((c for c in datos_clientes["clientes"] if c["id"] == id_cliente), None)
+-    if not cliente:
+-        print("❌ Cliente no encontrado.")
+-        return
++        cliente = next((c for c in datos_clientes["clientes"] if c["id"] == id_cliente), None)
++        if not cliente:
++            messagebox.showerror("Error", "Cliente no encontrado")
++            return
++
++        ventas_cliente = [v for v in datos_ventas["ventas"] if v.get("cliente_id") == id_cliente]
++
++        ventana_historial = tk.Toplevel(self.root)
++        ventana_historial.title(f"Historial de {nombre_cliente}")
++        ventana_historial.geometry("800x500")
++
++        ttk.Label(ventana_historial, text=f"Historial de compras: {nombre_cliente}", font=('Arial', 12, 'bold')).pack(
++            pady=10)
++
++        if not ventas_cliente:
++            ttk.Label(ventana_historial, text="Este cliente no tiene compras registradas").pack(pady=20)
++            return
++
++        # Treeview para historial
++        tree = ttk.Treeview(ventana_historial, columns=('ID Venta', 'Fecha', 'Total', 'Productos'), show='headings')
++        tree.heading('ID Venta', text='ID Venta')
++        tree.heading('Fecha', text='Fecha')
++        tree.heading('Total', text='Total')
++        tree.heading('Productos', text='Productos')
++
++        tree.column('ID Venta', width=80)
++        tree.column('Fecha', width=120)
++        tree.column('Total', width=100)
++        tree.column('Productos', width=400)
++
++        for venta in ventas_cliente:
++            productos = ", ".join(f"{p['nombre']} x{p['cantidad']} (${p['subtotal']:.2f})" for p in venta["productos"])
++            tree.insert('', tk.END, values=(
++                venta['id'],
++                venta['fecha'],
++                f"${venta['total']:.2f}",
++                productos
++            ))
++
++        scrollbar = ttk.Scrollbar(ventana_historial, orient=tk.VERTICAL, command=tree.yview)
++        tree.configure(yscroll=scrollbar.set)
++        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
++        tree.pack(fill=tk.BOTH, expand=True)
++
++        # Calcular total gastado
++        total_gastado = sum(v["total"] for v in ventas_cliente)
++        ttk.Label(ventana_historial, text=f"Total gastado: ${total_gastado:.2f}", font=('Arial', 10, 'bold')).pack(
++            pady=10)
++
++    # --------------------------
++    # Pestaña de Reportes
++    # --------------------------
++    def crear_pestana_reportes(self):
++        frame = ttk.Frame(self.notebook)
++        self.notebook.add(frame, text="Reportes")
++
++        ttk.Label(frame, text="Reportes y Estadísticas", font=('Arial', 12, 'bold')).pack(pady=20)
++
++        # Botones de reportes
++        ttk.Button(frame, text="Ventas por Período", command=self.reporte_ventas_periodo, width=30).pack(pady=10)
++        ttk.Button(frame, text="Productos Más Vendidos", command=self.reporte_productos_vendidos, width=30).pack(
++            pady=10)
++        ttk.Button(frame, text="Clientes con Más Compras", command=self.reporte_clientes_compras, width=30).pack(
++            pady=10)
++        ttk.Button(frame, text="Alertas de Stock", command=self.alertas_stock_reporte, width=30).pack(pady=10)
++
++    def reporte_ventas_periodo(self):
++        ventana = tk.Toplevel(self.root)
++        ventana.title("Ventas por Período")
++        ventana.geometry("600x400")
++
++        ttk.Label(ventana, text="Seleccione el período:", font=('Arial', 12, 'bold')).pack(pady=10)
++
++        frame_fechas = ttk.Frame(ventana)
++        frame_fechas.pack(pady=10)
++
++        ttk.Label(frame_fechas, text="Desde:").grid(row=0, column=0, padx=5, pady=5)
++        fecha_inicio = ttk.Entry(frame_fechas)
++        fecha_inicio.grid(row=0, column=1, padx=5, pady=5)
++
++        ttk.Label(frame_fechas, text="Hasta:").grid(row=1, column=0, padx=5, pady=5)
++        fecha_fin = ttk.Entry(frame_fechas)
++        fecha_fin.grid(row=1, column=1, padx=5, pady=5)
++
++        def generar_reporte():
++            inicio = fecha_inicio.get()
++            fin = fecha_fin.get()
++
++            if not inicio or not fin:
++                messagebox.showerror("Error", "Ingrese ambas fechas")
++                return
++
++            datos = self.cargar_datos(ARCHIVO_VENTAS)
++            ventas = [v for v in datos["ventas"] if inicio <= v["fecha"][:10] <= fin]
++
++            if not ventas:
++                messagebox.showinfo("Información", "No hay ventas en el período seleccionado")
++                return
+ 
+-    print(f"\n📋 HISTORIAL DE {cliente['nombre'].upper()}")
+-    for venta_id in cliente["compras"]:
+-        venta = next((v for v in datos_ventas["ventas"] if v["id"] == venta_id), None)
+-        if venta:
+-            print(f"\n📅 {venta['fecha']} | Total: ${venta['total']:.2f}")
++            total = sum(v["total"] for v in ventas)
++            num_ventas = len(ventas)
++            promedio = total / num_ventas if num_ventas > 0 else 0
++
++            # Mostrar resultados
++            frame_resultados = ttk.Frame(ventana)
++            frame_resultados.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
++
++            ttk.Label(frame_resultados, text=f"Período: {inicio} a {fin}", font=('Arial', 10, 'bold')).pack(anchor=tk.W)
++            ttk.Label(frame_resultados, text=f"Total de ventas: ${total:.2f}").pack(anchor=tk.W)
++            ttk.Label(frame_resultados, text=f"Número de ventas: {num_ventas}").pack(anchor=tk.W)
++            ttk.Label(frame_resultados, text=f"Promedio por venta: ${promedio:.2f}").pack(anchor=tk.W)
++
++            # Gráfico simple (simulado con texto)
++            ttk.Label(frame_resultados, text="\nDistribución de ventas:", font=('Arial', 10, 'bold')).pack(anchor=tk.W,
++                                                                                                           pady=10)
++
++            ventas_por_dia = {}
++            for v in ventas:
++                dia = v["fecha"][:10]
++                ventas_por_dia[dia] = ventas_por_dia.get(dia, 0) + v["total"]
++
++            for dia, monto in ventas_por_dia.items():
++                ttk.Label(frame_resultados, text=f"{dia}: ${monto:.2f}").pack(anchor=tk.W)
++
++        ttk.Button(ventana, text="Generar Reporte", command=generar_reporte).pack(pady=10)
++
++    def reporte_productos_vendidos(self):
++        datos = self.cargar_datos(ARCHIVO_VENTAS)
++
++        productos_vendidos = {}
++        for venta in datos["ventas"]:
+             for producto in venta["productos"]:
+-                print(f"   - {producto['nombre']} x{producto['cantidad']}")
++                if producto["id"] in productos_vendidos:
++                    productos_vendidos[producto["id"]]["cantidad"] += producto["cantidad"]
++                    productos_vendidos[producto["id"]]["total"] += producto["subtotal"]
++                else:
++                    productos_vendidos[producto["id"]] = {
++                        "nombre": producto["nombre"],
++                        "cantidad": producto["cantidad"],
++                        "total": producto["subtotal"]
++                    }
++
++        if not productos_vendidos:
++            messagebox.showinfo("Información", "No hay productos vendidos registrados")
++            return
++
++        # Ordenar por cantidad vendida
++        top_productos = sorted(productos_vendidos.values(), key=lambda x: x["cantidad"], reverse=True)
++
++        ventana = tk.Toplevel(self.root)
++        ventana.title("Productos Más Vendidos")
++        ventana.geometry("600x400")
+ 
++        ttk.Label(ventana, text="Productos Más Vendidos", font=('Arial', 12, 'bold')).pack(pady=10)
+ 
++        frame = ttk.Frame(ventana)
++        frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+ 
++        # Treeview para resultados
++        tree = ttk.Treeview(frame, columns=('Producto', 'Cantidad', 'Total'), show='headings')
++        tree.heading('Producto', text='Producto')
++        tree.heading('Cantidad', text='Cantidad Vendida')
++        tree.heading('Total', text='Total Vendido')
++
++        for producto in top_productos[:10]:  # Mostrar top 10
++            tree.insert('', tk.END, values=(
++                producto["nombre"],
++                producto["cantidad"],
++                f"${producto['total']:.2f}"
++            ))
++
++        scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=tree.yview)
++        tree.configure(yscroll=scrollbar.set)
++        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
++        tree.pack(fill=tk.BOTH, expand=True)
++
++    def reporte_clientes_compras(self):
++        datos_clientes = self.cargar_datos(ARCHIVO_PROOVEDOR)
++        datos_ventas = self.cargar_datos(ARCHIVO_VENTAS)
++
++        if not datos_clientes["clientes"]:
++            messagebox.showinfo("Información", "No hay clientes registrados")
++            return
++
++        clientes_compras = []
++        for cliente in datos_clientes["clientes"]:
++            ventas_cliente = [v for v in datos_ventas["ventas"] if v.get("cliente_id") == cliente["id"]]
++            total = sum(v["total"] for v in ventas_cliente)
++            if ventas_cliente:
++                clientes_compras.append({
++                    "id": cliente["id"],
++                    "nombre": cliente["nombre"],
++                    "num_compras": len(ventas_cliente),
++                    "total_gastado": total
++                })
++
++        if not clientes_compras:
++            messagebox.showinfo("Información", "No hay compras registradas de clientes")
++            return
++
++        # Ordenar por total gastado
++        top_clientes = sorted(clientes_compras, key=lambda x: x["total_gastado"], reverse=True)
++
++        ventana = tk.Toplevel(self.root)
++        ventana.title("Clientes con Más Compras")
++        ventana.geometry("600x400")
++
++        ttk.Label(ventana, text="Clientes con Más Compras", font=('Arial', 12, 'bold')).pack(pady=10)
++
++        frame = ttk.Frame(ventana)
++        frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
++
++        # Treeview para resultados
++        tree = ttk.Treeview(frame, columns=('Cliente', 'Compras', 'Total'), show='headings')
++        tree.heading('Cliente', text='Cliente')
++        tree.heading('Compras', text='N° de Compras')
++        tree.heading('Total', text='Total Gastado')
++
++        for cliente in top_clientes[:10]:  # Mostrar top 10
++            tree.insert('', tk.END, values=(
++                cliente["nombre"],
++                cliente["num_compras"],
++                f"${cliente['total_gastado']:.2f}"
++            ))
++
++        scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=tree.yview)
++        tree.configure(yscroll=scrollbar.set)
++        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
++        tree.pack(fill=tk.BOTH, expand=True)
++
++    def alertas_stock_reporte(self):
++        umbral = simpledialog.askinteger("Alertas de Stock", "Ingrese el stock mínimo para alerta:")
++        if umbral is None:
++            return
++
++        datos = self.cargar_datos(ARCHIVO_PRODUCTOS)
++        productos_bajos = [p for p in datos["productos"] if p["stock"] < umbral]
++
++        ventana = tk.Toplevel(self.root)
++        ventana.title(f"Productos con Stock menor a {umbral}")
++        ventana.geometry("500x300")
++
++        ttk.Label(ventana, text=f"Productos con stock menor a {umbral}", font=('Arial', 12, 'bold')).pack(pady=10)
++
++        if not productos_bajos:
++            ttk.Label(ventana, text="✅ Todos los productos están bien surtidos.").pack(pady=20)
++            return
++
++        frame = ttk.Frame(ventana)
++        frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
++
++        # Treeview para resultados
++        tree = ttk.Treeview(frame, columns=('Producto', 'Stock'), show='headings')
++        tree.heading('Producto', text='Producto')
++        tree.heading('Stock', text='Stock Actual')
++
++        for producto in productos_bajos:
++            tree.insert('', tk.END, values=(
++                producto["nombre"],
++                producto["stock"]
++            ))
++
++        scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=tree.yview)
++        tree.configure(yscroll=scrollbar.set)
++        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
++        tree.pack(fill=tk.BOTH, expand=True)
+ 
+ 
+ # --------------------------
+-# Menú Principal
++# Ejecución de la aplicación
+ # --------------------------
+-def mostrar_menu():
+-    print("\n=== GESTIÓN DE COLOMADO ===")
+-    print("1. Agregar Producto")
+-    print("2. Listar Productos")
+-    print("3. Buscar Producto")
+-    print("4. Modificar Producto")
+-    print("5. Eliminar Producto")
+-    print("6. Alertas de Stock")
+-    print("7. Nueva Venta")
+-    print("8. Historial de ventas")
+-    print("9. Registrar Cliente")
+-    print("10. Historial de Cliente")
+-    print("0. Salir")
+-
+-def main():
+-    # Crear archivos si no existen
+-    if not os.path.exists(ARCHIVO_PRODUCTOS):
+-        guardar_datos({"productos": []}, ARCHIVO_PRODUCTOS)
+-    if not os.path.exists(ARCHIVO_VENTAS):
+-        guardar_datos({"ventas": []}, ARCHIVO_VENTAS)
+-
+-    while True:
+-        mostrar_menu()
+-        opcion = input("Seleccione una opción: ")
+-
+-        if opcion == "1":
+-            agregar_producto()
+-        elif opcion == "2":
+-            listar_productos()
+-        elif opcion == "3":
+-            buscar_producto()
+-        elif opcion == "4":
+-            modificar_producto()
+-        elif opcion == "5":
+-            eliminar_producto()
+-        elif opcion == "6":
+-            alertas_stock()
+-        elif opcion == "7":
+-            nueva_venta()
+-        elif opcion =="8":
+-            historial_ventas()
+-        elif opcion == "9":
+-            registrar_cliente()
+-        elif opcion == "10":
+-            historial_cliente()
+-        elif opcion == "0":
+-            print("¡Hasta luego! 👋")
+-            break
+-        else:
+-            print("❌ Opción inválida. Intente de nuevo.")
+-
+ if __name__ == "__main__":
+-    main()
+\ No newline at end of file
++    root = tk.Tk()
++    app = SistemaColmadoApp(root)
++    root.mainloop()
+\ No newline at end of file

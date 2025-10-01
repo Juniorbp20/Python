@@ -1,37 +1,3 @@
 {
-    "clientes": [
-        {
-            "id": 1,
-            "nombre": "jlkhiuh",
-            "telefono": "6876325168",
-            "direccion": "",
-            "compras": []
-        },
-        {
-            "id": 2,
-            "nombre": "Eudy",
-            "telefono": "34803984",
-            "direccion": "Canete",
-            "compras": [
-                8,
-                16
-            ]
-        },
-        {
-            "id": 3,
-            "nombre": "Josefina",
-            "telefono": "0000000000",
-            "direccion": "conuco",
-            "compras": [
-                15
-            ]
-        },
-        {
-            "id": 4,
-            "nombre": "Manuel Perez",
-            "telefono": "52251148200",
-            "direccion": "Salcedo",
-            "compras": []
-        }
-    ]
+    "clientes": []
 }

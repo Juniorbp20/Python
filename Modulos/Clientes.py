@@ -218,10 +218,11 @@ def obtener_historial_compras_cliente_gui(cliente_id):
                         "subtotal": subtotal
                     })
                 
+                # Usar la clave actual 'total_neto' en lugar de 'total' para coherencia
                 venta_para_gui = {
                     "id_venta": venta_guardada.get("id"),
                     "fecha": venta_guardada.get("fecha", "N/A"),
-                    "total_final": venta_guardada.get("total", 0.0), # 'total' es el total neto de la venta
+                    "total_final": venta_guardada.get("total_neto", 0.0),
                     "productos_detalle": productos_detalle_gui,
                     # Podrías añadir más detalles de la venta si los necesitas en la GUI
                     # "descuento_aplicado": venta_guardada.get("descuento_aplicado", 0.0),

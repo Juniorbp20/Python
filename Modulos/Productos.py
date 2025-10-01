@@ -1,6 +1,6 @@
 # Modulos/Productos.py
 
-from Modulos.Datos import cargar_datos, guardar_datos, ARCHIVO_PRODUCTOS, ARCHIVO_CLIENTES
+from Modulos.Datos import cargar_datos, guardar_datos, ARCHIVO_PRODUCTOS, ARCHIVO_PROVEEDORES
 # No es ideal importar funciones de Clientes aquí si solo se usan en la versión de consola.
 # Para la GUI, la lógica de obtener clientes para el combobox de proveedor está en app_gui.py.
 
@@ -85,15 +85,17 @@ def obtener_productos_para_gui():
     if not productos_guardados:
         return []
 
-    datos_clientes = cargar_datos(ARCHIVO_CLIENTES)
-    clientes_map = {c["id"]: c.get("nombre", "Error Nombre Prov.") for c in datos_clientes.get("clientes", [])}
+    # Cargar proveedores reales para mapear proveedor_id -> nombre_proveedor
+    datos_proveedores = cargar_datos(ARCHIVO_PROVEEDORES)
+    proveedores_map = {p.get("id"): p.get("nombre", "Proveedor Desconocido") for p in datos_proveedores.get("proveedores", [])}
 
     productos_para_mostrar = []
     for producto_json in productos_guardados: # Renombrado para claridad
         nombre_proveedor = "N/A"
         proveedor_id = producto_json.get("proveedor_id")
         if proveedor_id is not None:
-            nombre_proveedor = clientes_map.get(proveedor_id, f"ID Proveedor: {proveedor_id} (No encontrado)")
+            # Buscar nombre en proveedores.json; si no existe, indicarlo claramente
+            nombre_proveedor = proveedores_map.get(proveedor_id, f"ID Proveedor: {proveedor_id} (No encontrado)")
 
         # Determinar el precio final de venta
         # Si el producto en JSON ya tiene 'precio_final_venta' (productos nuevos/actualizados), úsalo.
