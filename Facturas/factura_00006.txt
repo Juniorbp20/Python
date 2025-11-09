@@ -1,0 +1,24 @@
+       *** JB SOLUCION *** 
+     Avenida Ejemplo #123          
+   Paso Hondo, Tenares             
+       RNC: 101-00000-1       
+       Tel: 809-000-0000       
+=============================================
+FACTURA #: 00006
+Fecha y Hora: 2025-11-08 21:57:56
+Cliente: Consumidor Final
+---------------------------------------------
+Cant Descripcion           ITBIS/U.     Monto
+---------------------------------------------
+   1 Aceite #110          RD$  81.30 RD$ 532.95
+---------------------------------------------
+           SUBTOTAL SIN ITBIS: RD$   451.65
+                  ITBIS TOTAL: RD$    81.30
+           SUBTOTAL CON ITBIS: RD$   532.95
+           TOTAL NETO A PAGAR: RD$   532.95
+---------------------------------------------
+              DINERO RECIBIDO: RD$  1000.00
+              CAMBIO DEVUELTO: RD$   467.05
+=============================================
+    ¡Gracias por su compra!    
+=============================================

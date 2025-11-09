@@ -6,58 +6,174 @@ import subprocess
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog, scrolledtext 
 import datetime
+import json
+from pathlib import Path
+try:
+    from PIL import Image, ImageTk
+except ImportError:
+    Image = None
+    ImageTk = None
 from Modulos.Repo import (
     # Productos
     obtener_productos_para_gui, guardar_nuevo_producto,
     obtener_categorias_existentes, obtener_productos_para_venta_gui,
     # Clientes
     obtener_lista_clientes_para_combobox, guardar_nuevo_cliente_desde_gui,
+    obtener_clientes_para_tabla_gui,
     obtener_historial_compras_cliente_gui,
     # Ventas
     procesar_nueva_venta_gui, obtener_ventas_para_historial_gui, generar_texto_factura, obtener_venta_para_factura,
     # Proveedores
     obtener_lista_proveedores_para_combobox, obtener_historial_proveedor_gui, guardar_nuevo_proveedor_desde_gui,
+    obtener_proveedores_para_tabla_gui,
     actualizar_proveedor, obtener_proveedor_por_id,
     # Usuarios
-    autenticar_usuario, crear_usuario, obtener_usuarios_para_gui, eliminar_usuario_por_id,
+    autenticar_usuario, crear_usuario, obtener_usuarios_para_gui, eliminar_usuario_por_id, actualizar_password_usuario,
     # Productos extra
     obtener_producto_por_id, actualizar_producto,
 )
- 
+from Modulos.ui_styles import configure_app_styles, get_available_themes
+
+
+BASE_DIR = Path(__file__).resolve().parent
+CONFIG_FILE_PATH = BASE_DIR / "configuracion_app.json"
+DEFAULT_APP_CONFIG = {
+    "tema": "sistema",
+    "empresa": {
+        "nombre": "PyColmado",
+        "rnc": "101-00000-1",
+        "direccion": "Avenida Ejemplo #123",
+        "ciudad": "La Vega, Republica Dominicana",
+        "telefono": "809-000-0000",
+        "correo": "contacto@pycolmado.com",
+        "tagline": "Gestiona inventario, ventas y proveedores desde un solo lugar",
+        "logo_path": ""
+    },
+}
+
+
+def _load_logo_image(path: str, max_size: int = 200):
+    if not path:
+        return None
+    try:
+        full_path = Path(path).expanduser()
+        if not full_path.exists():
+            return None
+        if Image and ImageTk:
+            img = Image.open(full_path)
+            img.thumbnail((max_size, max_size), Image.LANCZOS)
+            return ImageTk.PhotoImage(img)
+        tk_img = tk.PhotoImage(file=str(full_path))
+        width, height = tk_img.width(), tk_img.height()
+        largest = max(width, height)
+        if largest > max_size:
+            scale = max(1, int(largest / max_size))
+            tk_img = tk_img.subsample(scale, scale)
+        return tk_img
+    except Exception as exc:
+        print(f"Advertencia: no se pudo cargar el logo: {exc}")
+        return None
+
+
+def _draw_default_logo(parent_frame, color):
+    canvas = tk.Canvas(parent_frame, bg=color, highlightthickness=0, width=200, height=200)
+    canvas.pack(expand=True, padx=20, pady=20)
+    cx, cy, r = 100, 100, 60
+    canvas.create_oval(cx-r, cy-r, cx+r, cy+r, outline="white", width=3)
+    canvas.create_line(cx, cy-r, cx, cy+r, fill="white", width=3)
+    canvas.create_arc(cx-44, cy-44, cx, cy+44, start=90, extent=180, style="arc", outline="white", width=3)
+    canvas.create_arc(cx, cy-44, cx+44, cy+44, start=-90, extent=180, style="arc", outline="white", width=3)
+    canvas.create_oval(cx-26, cy-6, cx-8, cy+12, fill="white", outline="")
+    canvas.create_oval(cx+8, cy-6, cx+26, cy+12, fill="white", outline="")
+    canvas.create_rectangle(0, 0, 240, 40, fill=color, outline="")
+
+
+def _read_saved_theme_key() -> str:
+    try:
+        if CONFIG_FILE_PATH.exists():
+            with CONFIG_FILE_PATH.open("r", encoding="utf-8") as fh:
+                data = json.load(fh)
+            if isinstance(data, dict):
+                return str(data.get("tema", "sistema")).lower()
+    except Exception:
+        pass
+    return "sistema"
 
 
 class LoginDialog(tk.Toplevel):
     """Diálogo modal de login. Retorna en self.result un dict con 'exito' y 'usuario'."""
     def __init__(self, master):
         super().__init__(master)
-        self.title("Iniciar Sesión")
+        self.title("Bienvenido a PyColmado")
         self.resizable(False, False)
         self.transient(master)
         self.grab_set()  # Modal
         self.result = {"exito": False, "usuario": None}
+        self.colors = configure_app_styles(self, theme_name=_read_saved_theme_key())
+        try:
+            self.configure(bg=self.colors.get("panel", "#ffffff"))
+        except Exception:
+            pass
 
-        main = ttk.Frame(self, padding=10)
+        main = ttk.Frame(self, padding=0)
         main.pack(fill=tk.BOTH, expand=True)
-        ttk.Label(main, text="Usuario:").grid(row=0, column=0, sticky="w", padx=5, pady=5)
-        self.user_var = tk.StringVar(value="Admin")
-        ttk.Entry(main, textvariable=self.user_var, width=24).grid(row=0, column=1, sticky="ew", padx=5, pady=5)
-
-        ttk.Label(main, text="Contraseña:").grid(row=1, column=0, sticky="w", padx=5, pady=5)
-        self.pass_var = tk.StringVar(value="1234")
-        entry_pass = ttk.Entry(main, textvariable=self.pass_var, width=24, show="*")
-        entry_pass.grid(row=1, column=1, sticky="ew", padx=5, pady=5)
-
-        btns = ttk.Frame(main)
-        btns.grid(row=2, column=0, columnspan=2, pady=10)
-        ttk.Button(btns, text="Entrar", command=self._on_login, style="Accent.TButton").pack(side=tk.LEFT, padx=4)
-        ttk.Button(btns, text="Cancelar", command=self._on_cancel, style="Exit.TButton").pack(side=tk.LEFT, padx=4)
-
+        main.columnconfigure(0, weight=0)
         main.columnconfigure(1, weight=1)
+        main.rowconfigure(0, weight=1)
+
+        empresa_info = DEFAULT_APP_CONFIG["empresa"]
+        try:
+            if CONFIG_FILE_PATH.exists():
+                with CONFIG_FILE_PATH.open("r", encoding="utf-8") as fh:
+                    stored = json.load(fh)
+                if isinstance(stored, dict) and isinstance(stored.get("empresa"), dict):
+                    empresa_info = stored.get("empresa", empresa_info)
+        except Exception:
+            pass
+        brand_color = self.colors.get("accent", "#2F66FF")
+
+        # Panel izquierdo
+        left = tk.Frame(main, bg=brand_color, width=240)
+        left.grid(row=0, column=0, sticky="nsew")
+        left.grid_propagate(False)
+        logo_container = tk.Frame(left, bg=brand_color)
+        logo_container.pack(expand=True, fill=tk.BOTH, padx=20, pady=20)
+        self._login_logo_img = _load_logo_image(empresa_info.get("logo_path", ""))
+        if self._login_logo_img:
+            logo_label = tk.Label(logo_container, image=self._login_logo_img, bg=brand_color)
+            logo_label.image = self._login_logo_img
+            logo_label.pack(expand=True)
+        else:
+            _draw_default_logo(logo_container, brand_color)
+
+        # Panel derecho (formulario)
+        form = tk.Frame(main, bg=self.colors.get("panel", "#ffffff"), padx=40, pady=30)
+        form.grid(row=0, column=1, sticky="nsew")
+        for i in range(6):
+            form.grid_rowconfigure(i, weight=0)
+        form.grid_columnconfigure(0, weight=1)
+
+        ttk.Label(form, text=empresa_info.get("nombre", "Sistema PyColmado"), style="Header.TLabel").grid(row=0, column=0, sticky="w")
+        ttk.Label(form, text="Ingresa tus credenciales para continuar.", style="Subheader.TLabel").grid(row=1, column=0, sticky="w", pady=(0, 20))
+
+        ttk.Label(form, text="Usuario").grid(row=2, column=0, sticky="w", pady=(0, 2))
+        self.user_var = tk.StringVar()
+        entry_user = ttk.Entry(form, textvariable=self.user_var, width=36)
+        entry_user.grid(row=3, column=0, sticky="ew", pady=(0, 12))
+
+        ttk.Label(form, text="Contraseña").grid(row=4, column=0, sticky="w", pady=(0, 2))
+        self.pass_var = tk.StringVar()
+        entry_pass = ttk.Entry(form, textvariable=self.pass_var, width=36, show="•")
+        entry_pass.grid(row=5, column=0, sticky="ew", pady=(0, 18))
+
+        login_btn = ttk.Button(form, text="Iniciar sesión", style="Accent.TButton", command=self._on_login)
+        login_btn.grid(row=6, column=0, sticky="ew")
 
         # Facilitar login con Enter
         entry_pass.bind("<Return>", lambda e: self._on_login())
+        entry_user.bind("<Return>", lambda e: entry_pass.focus_set())
         self.protocol("WM_DELETE_WINDOW", self._on_cancel)
-        self.after(100, lambda: entry_pass.focus_set())
+        self.after(100, lambda: entry_user.focus_set())
 
         # Asegurar que el diálogo sea visible y centrado
         try:
@@ -93,22 +209,28 @@ class ColmadoApp:
     def __init__(self, root_window, current_user: dict | None = None):
         self.root = root_window
         self.root.title("Sistema de Colmado PyColmado")
-        self.root.geometry("1000x750") 
-        # Estilos y tema de ttk (define estilos usados: Accent.TButton, Exit.TButton)
-        self._setup_styles()
+        self.root.geometry("1000x750")
+        self.available_theme_options = get_available_themes()
+        self._theme_label_by_key = {opt["key"]: opt["label"] for opt in self.available_theme_options}
+        self._theme_key_by_label = {opt["label"]: opt["key"] for opt in self.available_theme_options}
+        self._active_nav_key: str | None = None
+        self.app_config = self._load_app_config()
+        self.current_theme_key = self.app_config.get("tema", "sistema")
+        # Estilos y tema de ttk
+        self.colors = self._apply_theme(self.current_theme_key)
         # Usuario actual (dict con keys: username, rol, ...)
         self.current_user = current_user or {"username": "(sin login)", "rol": "cajero"}
         # Normalizar rol y configurar permisos por rol
         self._role = str(self.current_user.get("rol", "cajero")).lower()
         self._role_permissions = {
             'admin': {
-                'listar_productos','agregar_producto','nueva_venta','historial_ventas',
-                'registrar_proveedor','historial_proveedor','historial_cliente','gestionar_usuarios',
+                'inicio','listar_productos','agregar_producto','nueva_venta','historial_ventas',
+                'registrar_proveedor','historial_proveedor','historial_cliente','gestionar_usuarios','configuracion',
                 'registrar_cliente',
                 'editar_producto','editar_proveedor'
             },
-            'cajero': {'listar_productos','nueva_venta','historial_ventas','registrar_cliente'},
-            'almacen': {'agregar_producto','registrar_proveedor','historial_proveedor','editar_proveedor'}
+            'cajero': {'inicio','listar_productos','nueva_venta','historial_ventas','registrar_cliente','configuracion'},
+            'almacen': {'inicio','agregar_producto','registrar_proveedor','historial_proveedor','editar_proveedor','configuracion'}
         }
 
         # --- Variables para el formulario de agregar producto ---
@@ -163,51 +285,532 @@ class ColmadoApp:
         self.proveedor_hist_seleccionado_var = tk.StringVar()
         self.mapa_proveedores_historial = {}
 
-        content_frame = ttk.Frame(self.root, padding="10")
+        content_frame = ttk.Frame(self.root, padding="20 20 20 15", style="Background.TFrame")
         content_frame.pack(expand=True, fill=tk.BOTH)
-        actions_frame = ttk.LabelFrame(content_frame, text="Acciones Principales", padding="10")
-        actions_frame.pack(side=tk.LEFT, fill=tk.Y, padx=10, pady=10)
-        self.display_frame = ttk.Frame(content_frame, padding="10")
-        self.display_frame.pack(side=tk.RIGHT, expand=True, fill=tk.BOTH, padx=10, pady=10)
+
+        header_frame = ttk.Frame(content_frame, style="Content.TFrame", padding="16 18")
+        header_frame.pack(fill=tk.X, pady=(0, 18))
+        header_frame.columnconfigure(0, weight=1)
+        empresa_info = self._get_empresa_info()
+        ttk.Label(header_frame, text=empresa_info.get("nombre", "Panel principal"), style="Header.TLabel").grid(row=0, column=0, sticky="w")
+        ttk.Label(
+            header_frame,
+            text=empresa_info.get("tagline", "Gestiona inventario, ventas y proveedores desde un solo lugar"),
+            style="Subheader.TLabel"
+        ).grid(row=1, column=0, sticky="w", pady=(2, 0))
+        ttk.Label(
+            header_frame,
+            text=f"Sesión: {self.current_user.get('username','')} · Rol: {self.current_user.get('rol','')}",
+            style="Badge.TLabel",
+            padding=(14, 6)
+        ).grid(row=0, column=1, rowspan=2, sticky="e")
+
+        body_frame = ttk.Frame(content_frame, style="Background.TFrame")
+        body_frame.pack(fill=tk.BOTH, expand=True)
+
+        actions_frame = self._create_actions_panel(body_frame)
+
+        user_card = ttk.Frame(actions_frame, style="UserCard.TFrame", padding="12 10")
+        user_card.pack(fill=tk.X, pady=(0, 12))
+        ttk.Label(user_card, text="Sesión activa", style="Muted.TLabel").pack(anchor="w")
+        ttk.Label(
+            user_card,
+            text=f"{self.current_user.get('username','')} · {self.current_user.get('rol','').title()}",
+            style="CardTitle.TLabel"
+        ).pack(anchor="w", pady=(2, 0))
+        ttk.Label(
+            user_card,
+            text=datetime.date.today().strftime("%d %b %Y"),
+            style="Muted.TLabel"
+        ).pack(anchor="w", pady=(2, 0))
+
+        self.nav_buttons = {}
+        nav_items = [
+            ("Inicio", self.show_welcome_message_in_display, 'inicio'),
+            ("Listar Productos", self.listar_productos_action, 'listar_productos'),
+            ("Agregar Producto", self.agregar_producto_action, 'agregar_producto'),
+            ("Nueva Venta", self.nueva_venta_action, 'nueva_venta'),
+            ("Historial de Ventas", self.historial_ventas_action, 'historial_ventas'),
+            ("Registrar Proveedor", self.registrar_proveedor_action, 'registrar_proveedor'),
+            ("Registrar Cliente", self.registrar_cliente_action, 'registrar_cliente'),
+            ("Historial de Proveedor", self.historial_proveedor_action, 'historial_proveedor'),
+            ("Historial de Cliente", self.historial_cliente_action, 'historial_cliente'),
+            ("Gestionar Usuarios", self.gestionar_usuarios_action, 'gestionar_usuarios'),
+            ("Configuración", self.configuracion_action, 'configuracion'),
+        ]
+        for text, callback, permission in nav_items:
+            if self._allowed(permission):
+                btn = ttk.Button(actions_frame, text=text, command=callback, style="Nav.TButton")
+                btn.pack(fill=tk.X, pady=4)
+                self.nav_buttons[permission] = btn
+
+        ttk.Separator(actions_frame, orient=tk.HORIZONTAL, style="Nav.TSeparator").pack(fill=tk.X, pady=(10, 12))
+        btn_salir = ttk.Button(actions_frame, text="Salir", command=self.root.quit, style="Exit.TButton")
+        btn_salir.pack(fill=tk.X, pady=(6, 0))
+
+        self.display_frame = ttk.Frame(body_frame, padding="20 18", style="Content.TFrame")
+        self.display_frame.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
         self._clear_display_frame()
         self.show_welcome_message_in_display()
-        
-        btn_listar_productos = ttk.Button(actions_frame, text="Listar Productos", command=self.listar_productos_action)
-        if self._allowed('listar_productos'): btn_listar_productos.pack(fill=tk.X, pady=5)
-        btn_agregar_producto = ttk.Button(actions_frame, text="Agregar Producto", command=self.agregar_producto_action)
-        if self._allowed('agregar_producto'): btn_agregar_producto.pack(fill=tk.X, pady=5)
-        btn_nueva_venta = ttk.Button(actions_frame, text="Nueva Venta", command=self.nueva_venta_action)
-        if self._allowed('nueva_venta'): btn_nueva_venta.pack(fill=tk.X, pady=5)
-        btn_historial_ventas = ttk.Button(actions_frame, text="Historial de Ventas", command=self.historial_ventas_action)
-        if self._allowed('historial_ventas'): btn_historial_ventas.pack(fill=tk.X, pady=5)
-        btn_registrar_proveedor = ttk.Button(actions_frame, text="Registrar Proveedor", command=self.registrar_proveedor_action)
-        if self._allowed('registrar_proveedor'): btn_registrar_proveedor.pack(fill=tk.X, pady=5)
-        # Nuevo: registrar clientes (admin/cajero)
-        btn_registrar_cliente = ttk.Button(actions_frame, text="Registrar Cliente", command=self.registrar_cliente_action)
-        if self._allowed('registrar_cliente'): btn_registrar_cliente.pack(fill=tk.X, pady=5)
-        btn_historial_cliente = ttk.Button(actions_frame, text="Historial de Proveedor", command=self.historial_proveedor_action)
-        if self._allowed('historial_proveedor'): btn_historial_cliente.pack(fill=tk.X, pady=5)
-        btn_historial_cliente_real = ttk.Button(actions_frame, text="Historial de Cliente", command=self.historial_cliente_action)
-        if self._allowed('historial_cliente'): btn_historial_cliente_real.pack(fill=tk.X, pady=5)
-        # Botón de gestión de usuarios (solo visible para admin)
-        if self._allowed('gestionar_usuarios'):
-            btn_users = ttk.Button(actions_frame, text="Gestionar Usuarios", command=self.gestionar_usuarios_action)
-            btn_users.pack(fill=tk.X, pady=5)
-
-        btn_salir = ttk.Button(actions_frame, text="Salir", command=self.root.quit, style="Exit.TButton")
-        btn_salir.pack(fill=tk.X, pady=20)
 
     def _clear_display_frame(self):
         for widget in self.display_frame.winfo_children():
             widget.destroy()
 
     def show_welcome_message_in_display(self):
+        self._set_active_nav_action('inicio')
         self._clear_display_frame()
-        welcome_text = f"Bienvenido {self.current_user.get('username','')} ({self.current_user.get('rol','')}).\nSeleccione una accion del menu de la izquierda."
-        welcome_label = ttk.Label(self.display_frame, text=welcome_text,
-                                  font=("Arial", 12))
-        welcome_label.pack(padx=10, pady=10, anchor="center", expand=True)
+        container = ttk.Frame(self.display_frame, style="Content.TFrame")
+        container.pack(expand=True, fill=tk.BOTH)
 
+        ttk.Label(
+            container,
+            text=f"Bienvenido {self.current_user.get('username','')} ({self.current_user.get('rol','')}).",
+            style="Welcome.TLabel"
+        ).pack(anchor="w", pady=(0, 4))
+        ttk.Label(
+            container,
+            text="Resumen del sistema",
+            style="Subheader.TLabel"
+        ).pack(anchor="w", pady=(0, 12))
+
+        stats = self._collect_dashboard_metrics()
+        table_frame = ttk.Frame(container, style="Content.TFrame")
+        table_frame.pack(fill=tk.X, pady=(0, 14))
+
+        cols = ("concepto", "valor")
+        table_height = max(len(stats), 4)
+        self.dashboard_table = ttk.Treeview(
+            table_frame,
+            columns=cols,
+            show="headings",
+            height=table_height
+        )
+        self.dashboard_table.heading("concepto", text="Indicador")
+        self.dashboard_table.heading("valor", text="Valor")
+        self.dashboard_table.column("concepto", width=280, anchor="w", stretch=True)
+        self.dashboard_table.column("valor", width=180, anchor="center", stretch=False)
+        for concepto, valor in stats:
+            self.dashboard_table.insert("", tk.END, values=(concepto, valor))
+        self.dashboard_table.pack(fill=tk.X, expand=False)
+        self.dashboard_table.bind("<Double-1>", self._on_dashboard_double_click)
+        self._apply_treeview_striping(self.dashboard_table)
+
+        ttk.Label(
+            container,
+            text="Seleccione una accion desde el panel izquierdo para continuar.",
+            style="Muted.TLabel"
+        ).pack(anchor="w", pady=(8, 0))
+
+    def _set_active_nav_action(self, action_key: str | None):
+        self._active_nav_key = action_key
+        if not hasattr(self, 'nav_buttons'):
+            return
+        for key, btn in self.nav_buttons.items():
+            desired_style = "NavActive.TButton" if action_key == key else "Nav.TButton"
+            try:
+                btn.configure(style=desired_style)
+            except Exception:
+                pass
+
+    def _create_actions_panel(self, parent_frame):
+        container = ttk.Frame(parent_frame, style="Background.TFrame")
+        container.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 20))
+
+        canvas_bg = self.colors.get("nav_bg", "#f0f0f0")
+        self.nav_canvas = tk.Canvas(
+            container,
+            highlightthickness=0,
+            borderwidth=0,
+            background=canvas_bg,
+            width=230
+        )
+        vsb = ttk.Scrollbar(container, orient=tk.VERTICAL, command=self.nav_canvas.yview)
+        self.nav_canvas.configure(yscrollcommand=vsb.set)
+        vsb.pack(side=tk.RIGHT, fill=tk.Y)
+        self.nav_canvas.pack(side=tk.LEFT, fill=tk.Y, expand=False)
+
+        actions_frame = ttk.LabelFrame(
+            self.nav_canvas,
+            text="Acciones Principales",
+            padding="18 16 18 18",
+            style="Nav.TLabelframe"
+        )
+        self.nav_canvas_window = self.nav_canvas.create_window((0, 0), window=actions_frame, anchor="nw")
+
+        actions_frame.bind(
+            "<Configure>",
+            lambda e: self.nav_canvas.configure(scrollregion=self.nav_canvas.bbox("all"))
+        )
+        self.nav_canvas.bind("<Configure>", self._on_nav_canvas_configure)
+        self.nav_canvas.bind("<Enter>", lambda e: self.nav_canvas.bind_all("<MouseWheel>", self._on_nav_mousewheel))
+        self.nav_canvas.bind("<Leave>", lambda e: self.nav_canvas.unbind_all("<MouseWheel>"))
+        return actions_frame
+
+    def _on_nav_canvas_configure(self, event):
+        if hasattr(self, 'nav_canvas_window'):
+            self.nav_canvas.itemconfig(self.nav_canvas_window, width=event.width)
+
+    def _on_nav_mousewheel(self, event):
+        if hasattr(self, 'nav_canvas'):
+            try:
+                self.nav_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+            except Exception:
+                pass
+
+    def _load_app_config(self) -> dict:
+        data = json.loads(json.dumps(DEFAULT_APP_CONFIG))  # deep copy defaults
+        file_exists = CONFIG_FILE_PATH.exists()
+        try:
+            if file_exists:
+                with CONFIG_FILE_PATH.open("r", encoding="utf-8") as fh:
+                    stored = json.load(fh)
+                if isinstance(stored, dict):
+                    data.update({k: stored.get(k, data.get(k)) for k in stored.keys()})
+                    stored_empresa = stored.get("empresa") or {}
+                    empresa_defaults = DEFAULT_APP_CONFIG["empresa"].copy()
+                    empresa_defaults.update(stored_empresa)
+                    data["empresa"] = empresa_defaults
+        except Exception as exc:
+            print(f"Advertencia: no se pudo cargar configuracion del sistema: {exc}")
+        if not file_exists:
+            try:
+                with CONFIG_FILE_PATH.open("w", encoding="utf-8") as fh:
+                    json.dump(data, fh, indent=2, ensure_ascii=False)
+            except Exception:
+                pass
+        return data
+
+    def _save_app_config(self):
+        try:
+            with CONFIG_FILE_PATH.open("w", encoding="utf-8") as fh:
+                json.dump(self.app_config, fh, indent=2, ensure_ascii=False)
+        except Exception as exc:
+            print(f"Advertencia: no se pudo guardar configuracion del sistema: {exc}")
+
+    def _apply_theme(self, theme_key: str | None):
+        self.current_theme_key = (theme_key or "sistema").lower()
+        colors = configure_app_styles(self.root, theme_name=self.current_theme_key)
+        self.colors = colors
+        self.root.configure(bg=self.colors.get("bg", "#ffffff"))
+        # Reaplicar estilo activo en menu
+        if hasattr(self, '_active_nav_key'):
+            self._set_active_nav_action(self._active_nav_key)
+        return colors
+
+    def _get_empresa_info(self) -> dict:
+        return (self.app_config.get("empresa") or DEFAULT_APP_CONFIG["empresa"]).copy()
+
+    def _aplicar_tema_desde_config(self):
+        if not hasattr(self, 'theme_selector_var'):
+            return
+        selected_label = self.theme_selector_var.get()
+        theme_key = self._theme_key_by_label.get(selected_label, "sistema")
+        self._apply_theme(theme_key)
+        self.app_config["tema"] = theme_key
+        self._save_app_config()
+        messagebox.showinfo("Tema actualizado", "El tema se aplicó correctamente.", parent=self.display_frame)
+
+    def _guardar_datos_empresa(self):
+        if not all(hasattr(self, attr) for attr in [
+            'empresa_nombre_var','empresa_rnc_var','empresa_direccion_var',
+            'empresa_ciudad_var','empresa_telefono_var','empresa_correo_var'
+        ]):
+            return
+        nombre = self.empresa_nombre_var.get().strip()
+        rnc = self.empresa_rnc_var.get().strip()
+        direccion = self.empresa_direccion_var.get().strip()
+        ciudad = self.empresa_ciudad_var.get().strip()
+        telefono = self.empresa_telefono_var.get().strip()
+        correo = self.empresa_correo_var.get().strip()
+        tagline = self.empresa_tagline_var.get().strip()
+        logo_path = self.empresa_logo_var.get().strip()
+        if not nombre or not rnc:
+            messagebox.showerror("Datos Incompletos", "El nombre y el RNC son obligatorios.", parent=self.display_frame)
+            return
+        self.app_config["empresa"] = {
+            "nombre": nombre,
+            "rnc": rnc,
+            "direccion": direccion,
+            "ciudad": ciudad,
+            "telefono": telefono,
+            "correo": correo,
+            "tagline": tagline or DEFAULT_APP_CONFIG["empresa"]["tagline"],
+            "logo_path": logo_path,
+        }
+        self._save_app_config()
+        messagebox.showinfo("Datos guardados", "La información del negocio se actualizó correctamente.", parent=self.display_frame)
+
+    def _seleccionar_logo_empresa(self):
+        if self._role != 'admin':
+            return
+        path = filedialog.askopenfilename(
+            parent=self.display_frame,
+            title="Seleccionar logo",
+            filetypes=[("PNG", "*.png"), ("GIF", "*.gif"), ("Todos", "*.*")]
+        )
+        if path:
+            self.empresa_logo_var.set(path)
+
+    def _collect_dashboard_metrics(self):
+        """Genera datos para la tabla de bienvenida."""
+        stats = []
+
+        def add_row(label, supplier, formatter=str):
+            try:
+                value = supplier()
+                stats.append((label, formatter(value)))
+            except Exception as exc:
+                stats.append((label, "N/D"))
+                print(f"Advertencia dashboard '{label}': {exc}")
+
+        add_row("Productos activos", lambda: len(obtener_productos_para_gui()))
+        add_row("Clientes registrados", lambda: len(obtener_lista_clientes_para_combobox()))
+        add_row("Proveedores registrados", lambda: len(obtener_lista_proveedores_para_combobox()))
+
+        def ventas_supplier():
+            today = datetime.date.today().strftime("%Y-%m-%d")
+            info = obtener_ventas_para_historial_gui(today, today) or {}
+            ventas = info.get("ventas_mostradas", [])
+            total = float(info.get("total_periodo", 0.0))
+            return len(ventas), total
+
+        def ventas_formatter(data):
+            cantidad, total = data
+            return f"{cantidad} ventas / RD$ {total:,.2f}"
+
+        add_row("Ventas del dia", ventas_supplier, ventas_formatter)
+
+        if not stats:
+            stats.append(("Sin datos disponibles", "N/D"))
+        return stats
+
+    def _on_dashboard_double_click(self, event=None):
+        if not hasattr(self, 'dashboard_table'):
+            return
+        sel = self.dashboard_table.selection()
+        if not sel:
+            return
+        item = self.dashboard_table.item(sel[0])
+        values = item.get("values", [])
+        if not values:
+            return
+        label = values[0]
+        if label != "Ventas del dia":
+            return
+        today = datetime.date.today().strftime("%Y-%m-%d")
+        data = obtener_ventas_para_historial_gui(today, today) or {}
+        ventas = data.get("ventas_mostradas", [])
+        total = float(data.get("total_periodo", 0.0))
+        self._mostrar_modal_ventas_dia(ventas, total, today)
+
+    def _mostrar_modal_ventas_dia(self, ventas, total, fecha_str):
+        dlg = tk.Toplevel(self.root)
+        self._style_toplevel(dlg)
+        dlg.title(f"Ventas del {fecha_str}")
+        dlg.geometry("600x420")
+        dlg.transient(self.root); dlg.grab_set()
+        frame = ttk.Frame(dlg, padding=12)
+        frame.pack(fill=tk.BOTH, expand=True)
+        ttk.Label(frame, text=f"Resumen de ventas", style="Header.TLabel").pack(anchor="w", pady=(0, 4))
+
+        filtros = ttk.Frame(frame)
+        filtros.pack(fill=tk.X, pady=(0, 6))
+        ttk.Label(filtros, text="Desde:").pack(side=tk.LEFT)
+        desde_var = tk.StringVar(value=fecha_str)
+        hasta_var = tk.StringVar(value=fecha_str)
+        entry_desde = ttk.Entry(filtros, textvariable=desde_var, width=12)
+        entry_desde.pack(side=tk.LEFT, padx=(4, 12))
+        ttk.Label(filtros, text="Hasta:").pack(side=tk.LEFT)
+        entry_hasta = ttk.Entry(filtros, textvariable=hasta_var, width=12)
+        entry_hasta.pack(side=tk.LEFT, padx=(4, 12))
+        ttk.Button(filtros, text="Filtrar", style="Secondary.TButton", command=lambda: cargar_fechas()).pack(side=tk.LEFT)
+
+        total_filtrado = tk.DoubleVar(value=total)
+        total_str_var = tk.StringVar(value=f"Total del periodo: RD$ {total:,.2f}")
+        info_total = ttk.Label(frame, textvariable=total_str_var, style="Subheader.TLabel")
+        info_total.pack(anchor="w", pady=(4, 12))
+
+        cols = ("id", "cliente", "subtotal", "itbis", "descuento", "total")
+        tree = ttk.Treeview(frame, columns=cols, show="headings", height=10)
+        headers = {
+            "id": "ID Venta",
+            "cliente": "Cliente",
+            "subtotal": "Subtotal s/ITBIS",
+            "itbis": "ITBIS",
+            "descuento": "Descuento",
+            "total": "Total"
+        }
+        tree.heading("id", text=headers["id"]); tree.column("id", width=80, anchor=tk.CENTER)
+        tree.heading("cliente", text=headers["cliente"]); tree.column("cliente", width=150, anchor=tk.W)
+        tree.heading("subtotal", text=headers["subtotal"]); tree.column("subtotal", width=120, anchor=tk.E)
+        tree.heading("itbis", text=headers["itbis"]); tree.column("itbis", width=100, anchor=tk.E)
+        tree.heading("descuento", text=headers["descuento"]); tree.column("descuento", width=110, anchor=tk.E)
+        tree.heading("total", text=headers["total"]); tree.column("total", width=110, anchor=tk.E)
+
+        for venta in ventas:
+            tree.insert("", tk.END, values=(
+                venta.get("id_venta", "N/A"),
+                venta.get("nombre_cliente", "N/A"),
+                f"RD$ {venta.get('subtotal_bruto_sin_itbis', 0.0):.2f}",
+                f"RD$ {venta.get('itbis_total_venta', 0.0):.2f}",
+                f"RD$ {venta.get('descuento_aplicado', 0.0):.2f}",
+                f"RD$ {venta.get('total_final', 0.0):.2f}"
+            ))
+
+        vsb = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=tree.yview)
+        tree.configure(yscrollcommand=vsb.set)
+        vsb.pack(side=tk.RIGHT, fill=tk.Y)
+        tree.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
+        self._apply_treeview_striping(tree)
+
+        actions = ttk.Frame(dlg, padding=10)
+        actions.pack(fill=tk.X, side=tk.BOTTOM)
+        ttk.Button(actions, text="Exportar", style="Secondary.TButton", command=lambda: self._exportar_ventas_modal(tree, desde_var.get(), hasta_var.get())).pack(side=tk.LEFT, padx=5)
+        ttk.Button(actions, text="Cerrar", style="Secondary.TButton", command=dlg.destroy).pack(side=tk.RIGHT, padx=5)
+
+        def cargar_fechas():
+            fecha_ini = desde_var.get().strip()
+            fecha_fin = hasta_var.get().strip()
+            if not fecha_ini or not fecha_fin:
+                messagebox.showerror("Fechas", "Ingrese la fecha inicial y final.", parent=dlg)
+                return
+            try:
+                datetime.datetime.strptime(fecha_ini, "%Y-%m-%d")
+                datetime.datetime.strptime(fecha_fin, "%Y-%m-%d")
+            except ValueError:
+                messagebox.showerror("Fechas", "Formato inválido (use YYYY-MM-DD).", parent=dlg)
+                return
+            data = obtener_ventas_para_historial_gui(fecha_ini, fecha_fin) or {}
+            ventas_nuevas = data.get("ventas_mostradas", [])
+            total_nuevo = float(data.get("total_periodo", 0.0))
+            for item in tree.get_children():
+                tree.delete(item)
+            for venta in ventas_nuevas:
+                tree.insert("", tk.END, values=(
+                    venta.get("id_venta", "N/A"),
+                    venta.get("nombre_cliente", "N/A"),
+                    f"RD$ {venta.get('subtotal_bruto_sin_itbis', 0.0):.2f}",
+                    f"RD$ {venta.get('itbis_total_venta', 0.0):.2f}",
+                    f"RD$ {venta.get('descuento_aplicado', 0.0):.2f}",
+                    f"RD$ {venta.get('total_final', 0.0):.2f}"
+                ))
+            self._apply_treeview_striping(tree)
+            total_str_var.set(f"Total del periodo: RD$ {total_nuevo:,.2f}")
+
+    def _exportar_ventas_modal(self, tree: ttk.Treeview, fecha_ini: str, fecha_fin: str):
+        ventas = []
+        for item in tree.get_children():
+            ventas.append(tree.item(item).get("values", []))
+        if not ventas:
+            messagebox.showwarning("Sin datos", "No hay ventas para exportar.", parent=self.root)
+            return
+        formato = self._preguntar_formato_exportacion()
+        if not formato:
+            return
+
+        downloads = Path.home() / "Downloads"
+        downloads.mkdir(parents=True, exist_ok=True)
+        if formato == "pdf":
+            file_path = downloads / f"ventas_{fecha_ini}_{fecha_fin}.pdf"
+            try:
+                self._exportar_pdf_simple(file_path, ventas, fecha_ini, fecha_fin)
+                messagebox.showinfo("Exportación", f"Archivo guardado en:\n{file_path}", parent=self.root)
+            except Exception as exc:
+                messagebox.showerror("Exportación", f"No se pudo exportar a PDF: {exc}", parent=self.root)
+        else:
+            file_path = downloads / f"ventas_{fecha_ini}_{fecha_fin}.csv"
+            try:
+                self._exportar_csv_simple(file_path, ventas)
+                messagebox.showinfo("Exportación", f"Archivo guardado en:\n{file_path}", parent=self.root)
+            except Exception as exc:
+                messagebox.showerror("Exportación", f"No se pudo exportar: {exc}", parent=self.root)
+
+    def _preguntar_formato_exportacion(self):
+        opciones = ["Excel (.xlsx)", "PDF (.pdf)"]
+        dlg = tk.Toplevel(self.root)
+        self._style_toplevel(dlg)
+        dlg.title("Exportar ventas")
+        dlg.geometry("320x160")
+        dlg.transient(self.root); dlg.grab_set()
+        ttk.Label(dlg, text="Seleccione formato de exportación:", style="Header.TLabel").pack(pady=(10, 5), padx=12, anchor="w")
+        seleccion = tk.StringVar(value=opciones[0])
+        combo = ttk.Combobox(dlg, values=opciones, state="readonly", textvariable=seleccion)
+        combo.pack(fill=tk.X, padx=12)
+        combo.current(0)
+
+        result = {"value": None}
+        def confirmar():
+            val = seleccion.get()
+            result["value"] = "pdf" if "PDF" in val.upper() else "excel"
+            dlg.destroy()
+        ttk.Button(dlg, text="Exportar", style="Accent.TButton", command=confirmar).pack(pady=(10, 5))
+        ttk.Button(dlg, text="Cancelar", style="Secondary.TButton", command=lambda: dlg.destroy()).pack()
+        dlg.wait_window()
+        return result["value"]
+
+    def _pdf_escape_text(self, text: str) -> str:
+        return text.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+
+    def _exportar_pdf_simple(self, file_path: Path, ventas, fecha_ini: str, fecha_fin: str):
+        lines = [
+            f"Ventas del periodo {fecha_ini} al {fecha_fin}",
+            "",
+            "ID Venta | Cliente | Subtotal | ITBIS | Descuento | Total",
+        ]
+        for row in ventas:
+            lines.append(" | ".join(map(str, row)))
+
+        stream_lines = [
+            "BT",
+            "/F1 11 Tf",
+            "1 0 0 1 50 800 Tm",
+            "14 TL",
+        ]
+        for line in lines:
+            stream_lines.append(f"({self._pdf_escape_text(line)}) Tj")
+            stream_lines.append("T*")
+        stream_lines.append("ET")
+        stream = "\n".join(stream_lines)
+        stream_bytes = stream.encode("latin-1", "replace")
+
+        objects = []
+        objects.append("<< /Type /Catalog /Pages 2 0 R >>")
+        objects.append("<< /Type /Pages /Kids [3 0 R] /Count 1 >>")
+        objects.append("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>")
+        objects.append("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>")
+        objects.append(f"<< /Length {len(stream_bytes)} >>\nstream\n{stream}\nendstream")
+
+        pdf_parts = ["%PDF-1.4"]
+        offsets = [0]
+        current_offset = len(pdf_parts[0].encode("latin-1"))
+        for idx, obj in enumerate(objects, start=1):
+            offsets.append(current_offset)
+            obj_text = f"\n{idx} 0 obj\n{obj}\nendobj"
+            pdf_parts.append(obj_text)
+            current_offset += len(obj_text.encode("latin-1"))
+
+        xref_offset = current_offset
+        pdf_parts.append("\nxref")
+        pdf_parts.append(f"0 {len(objects)+1}")
+        pdf_parts.append("0000000000 65535 f ")
+        for off in offsets[1:]:
+            pdf_parts.append(f"{off:010} 00000 n ")
+
+        pdf_parts.append("trailer")
+        pdf_parts.append(f"<< /Size {len(objects)+1} /Root 1 0 R >>")
+        pdf_parts.append("startxref")
+        pdf_parts.append(str(xref_offset))
+        pdf_parts.append("%%EOF")
+
+        with file_path.open("wb") as fh:
+            fh.write("".join(pdf_parts).encode("latin-1"))
+
+    def _exportar_csv_simple(self, file_path: Path, ventas):
+        with file_path.open("w", encoding="utf-8", newline="") as f:
+            f.write("ID Venta;Cliente;Subtotal;ITBIS;Descuento;Total\n")
+            for row in ventas:
+                f.write(";".join(map(str, row)) + "\n")
     def _allowed(self, action_key: str) -> bool:
         return action_key in self._role_permissions.get(self._role, set()) or self._role == 'admin'
 
@@ -222,6 +825,7 @@ class ColmadoApp:
         if self.current_user.get("rol") != "admin":
             messagebox.showerror("Acceso denegado", "Solo un administrador puede gestionar usuarios.", parent=self.display_frame)
             return
+        self._set_active_nav_action('gestionar_usuarios')
         self._clear_display_frame()
         frame = ttk.LabelFrame(self.display_frame, text="Gestionar Usuarios (Admin)", padding="10")
         frame.pack(fill=tk.BOTH, expand=True)
@@ -243,6 +847,7 @@ class ColmadoApp:
         btns.grid(row=3, column=0, columnspan=2, pady=8)
         ttk.Button(btns, text="Crear Usuario", command=self._crear_usuario_submit, style="Accent.TButton").pack(side=tk.LEFT, padx=5)
         ttk.Button(btns, text="Eliminar Seleccionado", command=self._eliminar_usuario_submit, style="Exit.TButton").pack(side=tk.LEFT, padx=5)
+        ttk.Button(btns, text="Cambiar Contraseña", command=self._abrir_cambiar_contrasena_dialog).pack(side=tk.LEFT, padx=5)
         ttk.Button(btns, text="Refrescar Lista", command=self._refrescar_lista_usuarios).pack(side=tk.LEFT, padx=5)
 
         # Listado de usuarios actuales
@@ -285,6 +890,96 @@ class ColmadoApp:
             self.tree_usuarios.delete(i)
         for u in obtener_usuarios_para_gui():
             self.tree_usuarios.insert("", tk.END, values=(u.get("id"), u.get("username"), u.get("rol")))
+        self._apply_treeview_striping(self.tree_usuarios)
+
+    def _abrir_cambiar_contrasena_dialog(self):
+        if not hasattr(self, 'tree_usuarios'):
+            return
+        sel = self.tree_usuarios.selection()
+        if not sel:
+            messagebox.showwarning("Sin selección", "Seleccione un usuario de la lista.", parent=self.display_frame)
+            return
+        vals = self.tree_usuarios.item(sel[0]).get('values', [])
+        if not vals:
+            return
+        try:
+            user_id = int(vals[0])
+            username = str(vals[1]) if len(vals) > 1 else ''
+        except Exception:
+            messagebox.showerror("Error", "No se pudo determinar el usuario seleccionado.", parent=self.display_frame)
+            return
+
+        dlg = tk.Toplevel(self.root)
+        self._style_toplevel(dlg)
+        dlg.title(f"Cambiar contraseña de {username}")
+        dlg.geometry("360x200")
+        dlg.transient(self.root); dlg.grab_set()
+
+        frame = ttk.Frame(dlg, padding=15)
+        frame.pack(fill=tk.BOTH, expand=True)
+        ttk.Label(frame, text=f"Usuario: {username}", style="Subheader.TLabel").grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 10))
+        ttk.Label(frame, text="Contraseña actual:").grid(row=1, column=0, sticky="w", padx=5, pady=5)
+        pass_actual_var = tk.StringVar()
+        entry_pass_actual = ttk.Entry(frame, textvariable=pass_actual_var, show="*")
+        entry_pass_actual.grid(row=1, column=1, sticky="ew", padx=5, pady=5)
+        ttk.Label(frame, text="Nueva contraseña:").grid(row=2, column=0, sticky="w", padx=5, pady=5)
+        nueva_pass_var = tk.StringVar()
+        entry_pass_nueva = ttk.Entry(frame, textvariable=nueva_pass_var, show="*")
+        entry_pass_nueva.grid(row=2, column=1, sticky="ew", padx=5, pady=5)
+        frame.columnconfigure(1, weight=1)
+
+        def guardar():
+            actual = pass_actual_var.get().strip()
+            nueva = nueva_pass_var.get().strip()
+            if not actual or not nueva:
+                messagebox.showerror("Datos incompletos", "Ingrese la nueva contraseña.", parent=dlg); return
+            res = actualizar_password_usuario(user_id, actual, nueva)
+            if res.get("exito"):
+                messagebox.showinfo("Éxito", res.get("mensaje", "Contraseña actualizada."), parent=dlg)
+                dlg.destroy()
+            else:
+                messagebox.showerror("Error", res.get("mensaje", "No se pudo actualizar la contraseña."), parent=dlg)
+
+        btns = ttk.Frame(frame)
+        btns.grid(row=3, column=0, columnspan=2, pady=10)
+        ttk.Button(btns, text="Guardar", command=guardar, style="Accent.TButton").pack(side=tk.LEFT, padx=5)
+        ttk.Button(btns, text="Cancelar", command=dlg.destroy, style="Secondary.TButton").pack(side=tk.LEFT, padx=5)
+
+    def _refrescar_tabla_clientes_registrados(self):
+        if not hasattr(self, 'tree_clientes_registrados'):
+            return
+        for item in self.tree_clientes_registrados.get_children():
+            self.tree_clientes_registrados.delete(item)
+        for cliente in obtener_clientes_para_tabla_gui():
+            self.tree_clientes_registrados.insert(
+                "",
+                tk.END,
+                values=(
+                    cliente.get("id", ""),
+                    cliente.get("nombre", ""),
+                    cliente.get("telefono", "") or "N/D",
+                    cliente.get("direccion", "") or "",
+                ),
+            )
+        self._apply_treeview_striping(self.tree_clientes_registrados)
+
+    def _refrescar_tabla_proveedores_registrados(self):
+        if not hasattr(self, 'tree_proveedores_registrados'):
+            return
+        for item in self.tree_proveedores_registrados.get_children():
+            self.tree_proveedores_registrados.delete(item)
+        for proveedor in obtener_proveedores_para_tabla_gui():
+            self.tree_proveedores_registrados.insert(
+                "",
+                tk.END,
+                values=(
+                    proveedor.get("id", ""),
+                    proveedor.get("nombre", ""),
+                    proveedor.get("telefono", "") or "N/D",
+                    proveedor.get("direccion", "") or "",
+                ),
+            )
+        self._apply_treeview_striping(self.tree_proveedores_registrados)
 
     def _eliminar_usuario_submit(self):
         if not hasattr(self, 'tree_usuarios'):
@@ -311,28 +1006,6 @@ class ColmadoApp:
                 messagebox.showerror("Error", res.get('mensaje', 'No se pudo eliminar el usuario.'), parent=self.display_frame)
 
 
-    def _setup_styles(self):
-        """Configura el tema ttk y estilos usados por la app.
-        Define 'Accent.TButton' y 'Exit.TButton' si no existen.
-        """
-        try:
-            style = ttk.Style(self.root)
-            # Intentar usar un tema consistente en Linux/Windows
-            try:
-                style.theme_use('clam')
-            except Exception:
-                pass  # Mantener tema por defecto si falla
-            # Botón de acción principal (azul)
-            style.configure('Accent.TButton', foreground='white')
-            style.map('Accent.TButton', background=[('!disabled', '#0078D4'), ('active', '#106EBE')])
-            # Botón de salida/destructivo (rojo)
-            style.configure('Exit.TButton', foreground='white')
-            style.map('Exit.TButton', background=[('!disabled', '#D83B01'), ('active', '#A52600')])
-            # Suavizar encabezados de Treeview
-            style.configure('Treeview.Heading', font=("Arial", 10, 'bold'))
-        except Exception as e:
-            print(f"Advertencia: No se pudieron configurar estilos ttk: {e}")
-
     def _abrir_editar_producto_dialog(self, tree_widget):
         """Abre un diálogo para editar el producto seleccionado (solo admin)."""
         if not self._allowed('editar_producto'):
@@ -353,6 +1026,7 @@ class ColmadoApp:
             messagebox.showerror("Error", "No se encontró el producto en la base de datos.", parent=self.display_frame); return
 
         dlg = tk.Toplevel(self.root)
+        self._style_toplevel(dlg)
         dlg.title(f"Editar Producto #{prod_id}")
         dlg.geometry("720x520")
         dlg.transient(self.root); dlg.grab_set()
@@ -466,6 +1140,7 @@ class ColmadoApp:
             is_money = col in money_cols
             is_numeric = col in numeric_cols
             tree.heading(col, command=lambda c=col, m=is_money, n=is_numeric: self._on_treeview_heading_click(tree, c, n, m))
+        self._apply_treeview_striping(tree)
 
     def _on_treeview_heading_click(self, tree: ttk.Treeview, col: str, numeric: bool, money: bool):
         tree_id = id(tree)
@@ -502,46 +1177,127 @@ class ColmadoApp:
         items.sort(reverse=reverse)
         for index, (_, k) in enumerate(items):
             tree.move(k, '', index)
+        self._apply_treeview_striping(tree)
 
-    def listar_productos_action(self): 
+    def _apply_treeview_striping(self, tree: ttk.Treeview | None):
+        """Aplica filas alternas para dar contraste a los Treeview."""
+        if not tree:
+            return
+        try:
+            if not hasattr(tree, "_striping_configured"):
+                tree.tag_configure('evenrow', background=self.colors.get('panel', '#ffffff'), foreground=self.colors.get('text', '#000000'))
+                tree.tag_configure('oddrow', background=self.colors.get('panel_alt', '#f4f6fb'), foreground=self.colors.get('text', '#000000'))
+                tree._striping_configured = True  # type: ignore[attr-defined]
+            for idx, item in enumerate(tree.get_children('')):
+                tag = 'evenrow' if idx % 2 == 0 else 'oddrow'
+                tree.item(item, tags=(tag,))
+        except Exception as exc:
+            print(f"Advertencia: no se pudo aplicar striping en Treeview: {exc}")
+
+    def _refrescar_treeview_productos(self, productos):
+        tree = getattr(self, 'tree_productos_listado', None)
+        if not tree:
+            return
+        for item in tree.get_children():
+            tree.delete(item)
+        for producto in productos:
+            tree.insert("", tk.END, values=(
+                producto.get("id"),
+                producto.get("nombre"),
+                f"{producto.get('precio', 0.0):.2f}",
+                producto.get("stock"),
+                producto.get("categoria"),
+                producto.get("proveedor")
+            ))
+        self._apply_treeview_striping(tree)
+
+    def _filtrar_listado_productos(self, event=None):
+        if not hasattr(self, 'productos_listados_cache'):
+            return
+        texto = (self.producto_busqueda_var.get() or "").lower()
+        if not texto:
+            filtrados = self.productos_listados_cache
+        else:
+            filtrados = []
+            for prod in self.productos_listados_cache:
+                cadena = " ".join([
+                    str(prod.get("nombre", "")),
+                    str(prod.get("categoria", "")),
+                    str(prod.get("proveedor", "")),
+                    str(prod.get("id", "")),
+                ]).lower()
+                if texto in cadena:
+                    filtrados.append(prod)
+        self._refrescar_treeview_productos(filtrados)
+
+    def _style_scrolled_text(self, widget):
+        if not widget:
+            return
+        try:
+            widget.configure(
+                background=self.colors.get('panel', '#ffffff'),
+                foreground=self.colors.get('text', '#000000'),
+                insertbackground=self.colors.get('text', '#000000'),
+                highlightbackground=self.colors.get('border', '#cccccc'),
+                highlightcolor=self.colors.get('accent', '#2b8a8e'),
+                highlightthickness=1,
+                borderwidth=1,
+                relief='solid'
+            )
+        except Exception as exc:
+            print(f"Advertencia: no se pudo aplicar estilo a Text: {exc}")
+
+    def _style_toplevel(self, window):
+        if not window:
+            return
+        try:
+            window.configure(bg=self.colors.get("panel", "#ffffff"))
+        except Exception:
+            pass
+
+    def listar_productos_action(self):
         if not self._guard('listar_productos'):
             return
+        self._set_active_nav_action('listar_productos')
         self._clear_display_frame()
-        productos = obtener_productos_para_gui() 
+        productos = obtener_productos_para_gui()
+        self.productos_listados_cache = productos or []
+        self.producto_busqueda_var = tk.StringVar()
+
+        search_frame = ttk.Frame(self.display_frame, padding=(0, 0, 0, 4))
+        search_frame.pack(fill=tk.X, pady=(0, 6))
+        ttk.Label(search_frame, text="Buscar producto:").pack(side=tk.LEFT, padx=(0, 6))
+        entry_buscar = ttk.Entry(search_frame, textvariable=self.producto_busqueda_var, width=30)
+        entry_buscar.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        entry_buscar.bind("<KeyRelease>", self._filtrar_listado_productos)
+        entry_buscar.bind("<Return>", lambda e: (self.tree_productos_listado.focus_set(), "break"))
+
         if not productos:
             no_data_label = ttk.Label(self.display_frame, text="No hay productos para mostrar.", font=("Arial", 12))
             no_data_label.pack(padx=10, pady=10, anchor="center", expand=True)
             return
-        
-        columnas = ("id", "nombre", "precio_final", "stock", "categoria", "proveedor") 
-        tree = ttk.Treeview(self.display_frame, columns=columnas, show="headings", height=15)
-        tree.heading("id", text="ID");
+
+        columnas = ("id", "nombre", "precio_final", "stock", "categoria", "proveedor")
+        self.tree_productos_listado = ttk.Treeview(self.display_frame, columns=columnas, show="headings", height=15)
+        tree = self.tree_productos_listado
+        tree.heading("id", text="ID")
         tree.column("id", minwidth=0, width=50, stretch=tk.NO, anchor=tk.CENTER)
-        tree.heading("nombre", text="Nombre");
+        tree.heading("nombre", text="Nombre")
         tree.column("nombre", minwidth=0, width=200, stretch=tk.YES)
-        tree.heading("precio_final", text="Precio Venta Final (RD$)"); 
+        tree.heading("precio_final", text="Precio Venta Final (RD$)")
         tree.column("precio_final", minwidth=0, width=140, stretch=tk.NO, anchor=tk.E)
-        tree.heading("stock", text="Stock");
+        tree.heading("stock", text="Stock")
         tree.column("stock", minwidth=0, width=70, stretch=tk.NO, anchor=tk.CENTER)
-        tree.heading("categoria", text="Categoria");
+        tree.heading("categoria", text="Categoria")
         tree.column("categoria", minwidth=0, width=120, stretch=tk.YES)
-        tree.heading("proveedor", text="Proveedor");
+        tree.heading("proveedor", text="Proveedor")
         tree.column("proveedor", minwidth=0, width=150, stretch=tk.YES)
-        
-        for producto in productos:
-            tree.insert("", tk.END, values=(
-            producto.get("id"), 
-            producto.get("nombre"), 
-            f"{producto.get('precio'):.2f}", # 'precio' en obtener_productos_para_gui es precio_final_venta
-            producto.get("stock"), 
-            producto.get("categoria"),
-            producto.get("proveedor")
-            ))
+
         scrollbar = ttk.Scrollbar(self.display_frame, orient=tk.VERTICAL, command=tree.yview)
-        # Corregido: usar yscrollcommand en lugar de 'yscroll'
         tree.configure(yscrollcommand=scrollbar.set)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self._refrescar_treeview_productos(self.productos_listados_cache)
         # Habilitar ordenamiento por columnas (ID, Precio y Stock numéricos)
         self._enable_treeview_sorting(
             tree,
@@ -616,6 +1372,7 @@ class ColmadoApp:
     def agregar_producto_action(self):
         if not self._guard('agregar_producto'):
             return
+        self._set_active_nav_action('agregar_producto')
         self._clear_display_frame()
         self._cargar_datos_combobox_agregar_prod()
         
@@ -667,6 +1424,7 @@ class ColmadoApp:
         ttk.Label(form_frame, text="Descripcion (Opcional):").grid(row=current_row, column=0, padx=5, pady=5, sticky="nw")
         self.descripcion_prod_text = scrolledtext.ScrolledText(form_frame, width=48, height=3, wrap=tk.WORD, font=("Arial",9))
         self.descripcion_prod_text.grid(row=current_row, column=1, columnspan=3, padx=5, pady=5, sticky="ew")
+        self._style_scrolled_text(self.descripcion_prod_text)
         current_row += 1
         
         ttk.Label(form_frame, text="Stock Inicial:").grid(row=current_row, column=0, padx=5, pady=5, sticky="w")
@@ -691,8 +1449,8 @@ class ColmadoApp:
 
         buttons_frame = ttk.Frame(form_frame)
         buttons_frame.grid(row=current_row, column=0, columnspan=4, pady=15)
-        ttk.Button(buttons_frame, text="Guardar Producto", command=self._submit_nuevo_producto).pack(side=tk.LEFT, padx=5)
-        ttk.Button(buttons_frame, text="Limpiar Formulario", command=self._clear_agregar_producto_form).pack(side=tk.LEFT, padx=5)
+        ttk.Button(buttons_frame, text="Guardar Producto", command=self._submit_nuevo_producto, style="Accent.TButton").pack(side=tk.LEFT, padx=5)
+        ttk.Button(buttons_frame, text="Limpiar Formulario", command=self._clear_agregar_producto_form, style="Secondary.TButton").pack(side=tk.LEFT, padx=5)
         
         for i in range(4): 
             form_frame.columnconfigure(i, weight=1 if i > 0 else 0)
@@ -785,15 +1543,17 @@ class ColmadoApp:
         if resultado["exito"]:
             messagebox.showinfo("Exito", resultado["mensaje"], parent=self.display_frame)
             self._clear_registrar_cliente_form()
-            self._cargar_datos_para_nueva_venta() 
+            self._cargar_datos_para_nueva_venta()
             if hasattr(self, 'cliente_venta_combo'): self.cliente_venta_combo['values'] = self.lista_display_clientes_venta
             self._cargar_datos_combobox_agregar_prod()
             if hasattr(self, 'proveedor_combo_prod'): self.proveedor_combo_prod['values'] = self.lista_display_proveedores
+            self._refrescar_tabla_clientes_registrados()
         else: messagebox.showerror("Error al Guardar", resultado["mensaje"], parent=self.display_frame)
 
     def registrar_cliente_action(self):
         if not self._guard('registrar_cliente'):
             return
+        self._set_active_nav_action('registrar_cliente')
         self._clear_display_frame()
         form_frame = ttk.LabelFrame(self.display_frame, text="Registrar Nuevo Cliente", padding="15")
         form_frame.pack(padx=10, pady=10, fill=tk.X, anchor="n")
@@ -807,14 +1567,44 @@ class ColmadoApp:
         buttons_frame = ttk.Frame(form_frame)
         buttons_frame.grid(row=3, column=0, columnspan=2, pady=15)
         ttk.Button(buttons_frame, text="Guardar Cliente", command=self._submit_nuevo_cliente, style='Accent.TButton').pack(side=tk.LEFT, padx=10)
-        ttk.Button(buttons_frame, text="Limpiar Formulario", command=self._clear_registrar_cliente_form).pack(side=tk.LEFT, padx=10)
+        ttk.Button(buttons_frame, text="Limpiar Formulario", command=self._clear_registrar_cliente_form, style="Secondary.TButton").pack(side=tk.LEFT, padx=10)
         form_frame.columnconfigure(1, weight=1)
         self._clear_registrar_cliente_form()
+
+        tabla_frame = ttk.LabelFrame(self.display_frame, text="Clientes Registrados", padding="10")
+        tabla_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
+        columnas = ("id_c", "nombre_c", "telefono_c", "direccion_c")
+        self.tree_clientes_registrados = ttk.Treeview(tabla_frame, columns=columnas, show="headings", height=8)
+        self.tree_clientes_registrados.heading("id_c", text="ID")
+        self.tree_clientes_registrados.heading("nombre_c", text="Nombre")
+        self.tree_clientes_registrados.heading("telefono_c", text="Teléfono")
+        self.tree_clientes_registrados.heading("direccion_c", text="Dirección")
+        self.tree_clientes_registrados.column("id_c", width=60, anchor=tk.CENTER, stretch=tk.NO)
+        self.tree_clientes_registrados.column("nombre_c", width=200, anchor=tk.W, stretch=tk.YES)
+        self.tree_clientes_registrados.column("telefono_c", width=120, anchor=tk.CENTER, stretch=tk.NO)
+        self.tree_clientes_registrados.column("direccion_c", width=260, anchor=tk.W, stretch=tk.YES)
+        sb_clientes = ttk.Scrollbar(tabla_frame, orient=tk.VERTICAL, command=self.tree_clientes_registrados.yview)
+        self.tree_clientes_registrados.configure(yscrollcommand=sb_clientes.set)
+        self.tree_clientes_registrados.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        sb_clientes.pack(side=tk.RIGHT, fill=tk.Y)
+        self._refrescar_tabla_clientes_registrados()
+        self._enable_treeview_sorting(
+            self.tree_clientes_registrados,
+            original_headers={
+                "id_c": "ID",
+                "nombre_c": "Nombre",
+                "telefono_c": "Teléfono",
+                "direccion_c": "Dirección",
+            },
+            numeric_cols={"id_c"},
+            money_cols=set(),
+        )
 
 
     def registrar_proveedor_action(self):
         if not self._guard('registrar_proveedor'):
             return
+        self._set_active_nav_action('registrar_proveedor')
         self._clear_display_frame()
         form_frame = ttk.LabelFrame(self.display_frame, text="Registrar Nuevo Proveedor", padding="15")
         form_frame.pack(padx=10, pady=10, fill=tk.X, anchor="n")
@@ -828,11 +1618,40 @@ class ColmadoApp:
         buttons_frame = ttk.Frame(form_frame)
         buttons_frame.grid(row=3, column=0, columnspan=2, pady=15)
         # Guardar nuevo proveedor (método implementado abajo)
-        ttk.Button(buttons_frame, text="Guardar Proveedor", command=self._submit_nuevo_proveedor).pack(side=tk.LEFT, padx=10)
+        ttk.Button(buttons_frame, text="Guardar Proveedor", command=self._submit_nuevo_proveedor, style="Accent.TButton").pack(side=tk.LEFT, padx=10)
         # Limpiar solo campos de proveedor
-        ttk.Button(buttons_frame, text="Limpiar Formulario", command=self._clear_registrar_proveedor_form).pack(side=tk.LEFT, padx=10)
+        ttk.Button(buttons_frame, text="Limpiar Formulario", command=self._clear_registrar_proveedor_form, style="Secondary.TButton").pack(side=tk.LEFT, padx=10)
         form_frame.columnconfigure(1, weight=1)
         self._clear_registrar_proveedor_form()
+
+        tabla_frame = ttk.LabelFrame(self.display_frame, text="Proveedores Registrados", padding="10")
+        tabla_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
+        columnas = ("id_p", "nombre_p", "telefono_p", "direccion_p")
+        self.tree_proveedores_registrados = ttk.Treeview(tabla_frame, columns=columnas, show="headings", height=8)
+        self.tree_proveedores_registrados.heading("id_p", text="ID")
+        self.tree_proveedores_registrados.heading("nombre_p", text="Nombre")
+        self.tree_proveedores_registrados.heading("telefono_p", text="Teléfono")
+        self.tree_proveedores_registrados.heading("direccion_p", text="Dirección")
+        self.tree_proveedores_registrados.column("id_p", width=60, anchor=tk.CENTER, stretch=tk.NO)
+        self.tree_proveedores_registrados.column("nombre_p", width=220, anchor=tk.W, stretch=tk.YES)
+        self.tree_proveedores_registrados.column("telefono_p", width=130, anchor=tk.CENTER, stretch=tk.NO)
+        self.tree_proveedores_registrados.column("direccion_p", width=260, anchor=tk.W, stretch=tk.YES)
+        sb_proveedores = ttk.Scrollbar(tabla_frame, orient=tk.VERTICAL, command=self.tree_proveedores_registrados.yview)
+        self.tree_proveedores_registrados.configure(yscrollcommand=sb_proveedores.set)
+        self.tree_proveedores_registrados.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        sb_proveedores.pack(side=tk.RIGHT, fill=tk.Y)
+        self._refrescar_tabla_proveedores_registrados()
+        self._enable_treeview_sorting(
+            self.tree_proveedores_registrados,
+            original_headers={
+                "id_p": "ID",
+                "nombre_p": "Nombre",
+                "telefono_p": "Teléfono",
+                "direccion_p": "Dirección",
+            },
+            numeric_cols={"id_p"},
+            money_cols=set(),
+        )
 
     def _clear_registrar_proveedor_form(self):
         """Limpia el formulario de registro de proveedores."""
@@ -865,6 +1684,7 @@ class ColmadoApp:
             # Si la vista de historial de proveedores está abierta, recargar su combobox
             if hasattr(self, 'proveedor_hist_combo'):
                 self._cargar_proveedores_para_historial_combo()
+            self._refrescar_tabla_proveedores_registrados()
         else:
             messagebox.showerror("Error al Guardar", resultado.get("mensaje", "No se pudo guardar el proveedor."), parent=self.display_frame)
 
@@ -879,10 +1699,26 @@ class ColmadoApp:
             ]
         current_text_in_box = self.producto_venta_combo.get()
         self.producto_venta_combo['values'] = self.lista_display_productos_venta_filtrada
-        self.producto_venta_combo.set(current_text_in_box)
+        self.producto_venta_combo.delete(0, tk.END)
+        self.producto_venta_combo.insert(0, current_text_in_box)
+        self.producto_venta_combo.icursor(tk.END)
         if self.lista_display_productos_venta_filtrada and self.root.focus_get() == self.producto_venta_combo:
-            if len(current_text_in_box) > 0:
+            try:
+                self.producto_venta_combo.event_generate("<Down>")
+                # Restaurar texto después de abrir el dropdown
+                self.producto_venta_combo.delete(0, tk.END)
+                self.producto_venta_combo.insert(0, current_text_in_box)
+                self.producto_venta_combo.icursor(tk.END)
+            except Exception:
                 pass
+
+    def _agregar_item_a_venta_actual_event(self, event=None):
+        self._agregar_item_a_venta_actual()
+        return "break"
+
+    def _confirmar_venta_action_event(self, event=None):
+        self._confirmar_venta_action()
+        return "break"
 
     def _cargar_datos_para_nueva_venta(self):
         clientes_data = obtener_lista_clientes_para_combobox()
@@ -1012,6 +1848,7 @@ class ColmadoApp:
                     f"RD$ {item.get('precio_unitario', 0.0):.2f}",
                     f"RD$ {item.get('subtotal', 0.0):.2f}"
                 ))
+            self._apply_treeview_striping(self.tree_items_venta)
     
     def _eliminar_item_de_venta_actual(self):
         if not hasattr(self, 'tree_items_venta'): return
@@ -1120,7 +1957,7 @@ class ColmadoApp:
             if 'venta_registrada' in resultado:
                 venta_guardada = resultado['venta_registrada']
                 nombre_cliente_factura = cliente_nombre_sel if cliente_nombre_sel != "Ninguno" else "Consumidor Final"
-                texto_factura_generada = generar_texto_factura(venta_guardada, nombre_cliente_factura) 
+                texto_factura_generada = generar_texto_factura(venta_guardada, nombre_cliente_factura, datos_empresa=self._get_empresa_info())
                 nombre_archivo_factura = ""
                 try:
                     factura_dir = "Facturas"; os.makedirs(factura_dir, exist_ok=True)
@@ -1160,6 +1997,7 @@ class ColmadoApp:
     def nueva_venta_action(self):
         if not self._guard('nueva_venta'):
             return
+        self._set_active_nav_action('nueva_venta')
         self._clear_display_frame()
         self._cargar_datos_para_nueva_venta()
         venta_main_frame = ttk.Frame(self.display_frame)
@@ -1174,6 +2012,7 @@ class ColmadoApp:
         self.producto_venta_combo.pack(side=tk.LEFT, padx=2, fill=tk.X, expand=True)
         self.producto_venta_combo.bind("<<ComboboxSelected>>", self._actualizar_info_producto_seleccionado_venta)
         self.producto_venta_combo.bind("<KeyRelease>", self._on_producto_venta_keyup)
+        self.producto_venta_combo.bind("<Return>", self._agregar_item_a_venta_actual_event)
         prod_info_qty_frame = ttk.Frame(venta_main_frame)
         prod_info_qty_frame.pack(fill=tk.X, pady=(0, 5))
         self.stock_disponible_venta_label = ttk.Label(prod_info_qty_frame, text="Stock Disp: -", width=18)
@@ -1183,7 +2022,13 @@ class ColmadoApp:
         ttk.Label(prod_info_qty_frame, text="Cantidad:").pack(side=tk.LEFT, padx=(5, 2))
         self.cantidad_venta_entry = ttk.Entry(prod_info_qty_frame, textvariable=self.cantidad_venta_var, width=7)
         self.cantidad_venta_entry.pack(side=tk.LEFT, padx=2)
-        btn_agregar_item = ttk.Button(prod_info_qty_frame, text="Agregar a Venta", command=self._agregar_item_a_venta_actual)
+        self.cantidad_venta_entry.bind("<Return>", self._agregar_item_a_venta_actual_event)
+        btn_agregar_item = ttk.Button(
+            prod_info_qty_frame,
+            text="Agregar a Venta",
+            command=self._agregar_item_a_venta_actual,
+            style="Secondary.TButton"
+        )
         btn_agregar_item.pack(side=tk.LEFT, padx=5)
         items_venta_frame = ttk.LabelFrame(venta_main_frame, text="Items en Venta Actual", padding="5")
         items_venta_frame.pack(fill=tk.BOTH, expand=True, pady=5)
@@ -1198,6 +2043,7 @@ class ColmadoApp:
         self.tree_items_venta.configure(yscrollcommand=scrollbar_items_venta.set)
         scrollbar_items_venta.pack(side=tk.RIGHT, fill=tk.Y)
         self.tree_items_venta.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.tree_items_venta.bind("<Delete>", lambda e: (self._eliminar_item_de_venta_actual(), "break"))
         
         summary_payment_frame = ttk.LabelFrame(venta_main_frame, text="Resumen y Pago", padding="10")
         summary_payment_frame.pack(fill=tk.X, pady=5)
@@ -1225,6 +2071,7 @@ class ColmadoApp:
         self.dinero_recibido_entry = ttk.Entry(summary_payment_frame, textvariable=self.dinero_recibido_var, width=12)
         self.dinero_recibido_entry.grid(row=row_idx, column=1, sticky="e", padx=5, pady=2)
         self.dinero_recibido_entry.bind("<KeyRelease>", self._actualizar_sumario_venta)
+        self.dinero_recibido_entry.bind("<Return>", self._confirmar_venta_action_event)
         ttk.Label(summary_payment_frame, text="Cambio:", font=("Arial", 10, "bold")).grid(row=row_idx, column=2, sticky="w", padx=5, pady=2)
         ttk.Label(summary_payment_frame, textvariable=self.cambio_devuelto_var, font=("Arial", 10, "bold")).grid(row=row_idx, column=3, sticky="e", padx=5, pady=2)
         
@@ -1235,9 +2082,19 @@ class ColmadoApp:
 
         venta_actions_frame = ttk.Frame(venta_main_frame)
         venta_actions_frame.pack(fill=tk.X, pady=10, side=tk.BOTTOM)
-        btn_eliminar_item_bottom = ttk.Button(venta_actions_frame, text="Eliminar Item", command=self._eliminar_item_de_venta_actual)
+        btn_eliminar_item_bottom = ttk.Button(
+            venta_actions_frame,
+            text="Eliminar Item",
+            command=self._eliminar_item_de_venta_actual,
+            style="Exit.TButton"
+        )
         btn_eliminar_item_bottom.pack(side=tk.LEFT, padx=5)
-        btn_cancelar_venta = ttk.Button(venta_actions_frame, text="Cancelar Venta", command=self._limpiar_y_mostrar_welcome)
+        btn_cancelar_venta = ttk.Button(
+            venta_actions_frame,
+            text="Cancelar Venta",
+            command=self._limpiar_y_mostrar_welcome,
+            style="Secondary.TButton"
+        )
         btn_cancelar_venta.pack(side=tk.LEFT, padx=5)
         btn_confirmar_venta = ttk.Button(venta_actions_frame, text="Confirmar y Guardar Venta", command=self._confirmar_venta_action, style="Accent.TButton")
         btn_confirmar_venta.pack(side=tk.RIGHT, padx=10)
@@ -1249,6 +2106,7 @@ class ColmadoApp:
     def historial_ventas_action(self):
         if not self._guard('historial_ventas'):
             return
+        self._set_active_nav_action('historial_ventas')
         self._clear_display_frame()
         filtro_frame = ttk.Frame(self.display_frame)
         filtro_frame.pack(fill=tk.X, pady=5)
@@ -1256,8 +2114,18 @@ class ColmadoApp:
         ttk.Entry(filtro_frame, textvariable=self.fecha_inicio_hist_var, width=12).pack(side=tk.LEFT, padx=5)
         ttk.Label(filtro_frame, text="Fecha Fin (YYYY-MM-DD):").pack(side=tk.LEFT, padx=5)
         ttk.Entry(filtro_frame, textvariable=self.fecha_fin_hist_var, width=12).pack(side=tk.LEFT, padx=5)
-        ttk.Button(filtro_frame, text="Filtrar", command=lambda: self._poblar_historial_ventas_treeview(filtrar_por_fecha=True)).pack(side=tk.LEFT, padx=5)
-        ttk.Button(filtro_frame, text="Mostrar Todas", command=lambda: self._poblar_historial_ventas_treeview(filtrar_por_fecha=False)).pack(side=tk.LEFT, padx=5)
+        ttk.Button(
+            filtro_frame,
+            text="Filtrar",
+            command=lambda: self._poblar_historial_ventas_treeview(filtrar_por_fecha=True),
+            style="Secondary.TButton"
+        ).pack(side=tk.LEFT, padx=5)
+        ttk.Button(
+            filtro_frame,
+            text="Mostrar Todas",
+            command=lambda: self._poblar_historial_ventas_treeview(filtrar_por_fecha=False),
+            style="Secondary.TButton"
+        ).pack(side=tk.LEFT, padx=5)
         hist_main_frame = ttk.Frame(self.display_frame)
         hist_main_frame.pack(fill=tk.BOTH, expand=True, pady=5)
         columnas_hist = ("id_v", "fecha_v", "cliente_v", "subtotal_s_itbis_v", "itbis_v", "descuento_v", "total_v")
@@ -1322,6 +2190,8 @@ class ColmadoApp:
                     f"RD$ {venta.get('subtotal_bruto_sin_itbis', 0.0):.2f}", f"RD$ {venta.get('itbis_total_venta', 0.0):.2f}",
                     f"RD$ {venta.get('descuento_aplicado', 0.0):.2f}", f"RD$ {venta.get('total_final', 0.0):.2f}" ))
         if hasattr(self, 'label_total_periodo_hist'): self.label_total_periodo_hist.config(text=f"Total del Periodo: RD$ {resultado_ventas.get('total_periodo', 0.0):.2f}")
+        self._apply_treeview_striping(getattr(self, 'tree_historial_ventas', None))
+        self._apply_treeview_striping(getattr(self, 'tree_detalle_historial_venta', None))
 
     def _mostrar_detalle_venta_historial(self, event=None):
         if not hasattr(self, 'tree_detalle_historial_venta'): return
@@ -1337,6 +2207,7 @@ class ColmadoApp:
                 self.tree_detalle_historial_venta.insert("", tk.END, values=(
                     prod.get("nombre", "N/A"), prod.get("cantidad", 0),
                     f"RD$ {prod.get('precio_unitario', 0.0):.2f}", f"RD$ {prod.get('subtotal', 0.0):.2f}" ))
+            self._apply_treeview_striping(self.tree_detalle_historial_venta)
         else:
              if hasattr(self, 'label_detalle_venta_id_frame'): self.label_detalle_venta_id_frame.config(text="Detalle de Venta ID: - (Error al cargar)")
     
@@ -1382,6 +2253,7 @@ class ColmadoApp:
                 for compra in self.historial_compras_cliente_actual:
                     self.tree_historial_compras_cliente.insert("", tk.END, iid=str(compra.get("id_venta")), values=(
                         compra.get("id_venta", "N/A"), compra.get("fecha", "N/A"), f"RD$ {compra.get('total_final', 0.0):.2f}" ))
+                self._apply_treeview_striping(self.tree_historial_compras_cliente)
             self.cliente_hist_total_gastado_var.set(f"Total Gastado: RD$ {resultado.get('total_gastado', 0.0):.2f}")
         else:
             self.historial_compras_cliente_actual = []
@@ -1392,13 +2264,14 @@ class ColmadoApp:
     def historial_cliente_action(self):
         if not self._guard('historial_cliente'):
             return
+        self._set_active_nav_action('historial_cliente')
         self._clear_display_frame()
         seleccion_frame = ttk.Frame(self.display_frame, padding="5")
         seleccion_frame.pack(fill=tk.X, pady=5)
         ttk.Label(seleccion_frame, text="Seleccionar Cliente:").pack(side=tk.LEFT, padx=(0, 5))
         self.cliente_hist_combo = ttk.Combobox(seleccion_frame, textvariable=self.cliente_hist_seleccionado_var, state="readonly", width=30)
         self.cliente_hist_combo.pack(side=tk.LEFT, padx=5)
-        btn_ver_historial = ttk.Button(seleccion_frame, text="Ver Historial", command=self._ver_historial_cliente_seleccionado)
+        btn_ver_historial = ttk.Button(seleccion_frame, text="Ver Historial", command=self._ver_historial_cliente_seleccionado, style="Accent.TButton")
         btn_ver_historial.pack(side=tk.LEFT, padx=10)
         self._cargar_clientes_para_historial_combo()
         info_cliente_frame = ttk.LabelFrame(self.display_frame, text="Informacion del Cliente", padding="10")
@@ -1433,6 +2306,87 @@ class ColmadoApp:
         label_total_gastado = ttk.Label(self.display_frame, textvariable=self.cliente_hist_total_gastado_var, font=("Arial", 12, "bold"))
         label_total_gastado.pack(pady=5, anchor="e", padx=10)
         self._limpiar_vista_historial_cliente()
+
+    def configuracion_action(self):
+        if not self._guard('configuracion'):
+            return
+        self._set_active_nav_action('configuracion')
+        self._clear_display_frame()
+        cont = ttk.Frame(self.display_frame, padding="15", style="Content.TFrame")
+        cont.pack(fill=tk.BOTH, expand=True)
+
+        # Seccion de tema
+        tema_frame = ttk.LabelFrame(cont, text="Preferencias de Tema", padding="12")
+        tema_frame.pack(fill=tk.X, pady=(0, 12))
+        ttk.Label(tema_frame, text="Selecciona el tema de la aplicación:").grid(row=0, column=0, sticky="w")
+        tema_labels = [self._theme_label_by_key.get(opt["key"], opt["key"].title()) for opt in self.available_theme_options]
+        current_label = self._theme_label_by_key.get(self.current_theme_key, tema_labels[0])
+        self.theme_selector_var = tk.StringVar(value=current_label)
+        ttk.Combobox(
+            tema_frame,
+            values=tema_labels,
+            textvariable=self.theme_selector_var,
+            state="readonly",
+            width=28
+        ).grid(row=1, column=0, sticky="w", pady=5)
+        ttk.Button(
+            tema_frame,
+            text="Aplicar Tema",
+            style="Accent.TButton",
+            command=self._aplicar_tema_desde_config
+        ).grid(row=1, column=1, padx=10, sticky="e")
+        tema_frame.columnconfigure(0, weight=1)
+        tema_frame.columnconfigure(1, weight=0)
+
+        # Seccion de datos del negocio solo para admin
+        if self._role == 'admin':
+            empresa_info = self._get_empresa_info()
+            datos_frame = ttk.LabelFrame(cont, text="Datos del Negocio", padding="12")
+            datos_frame.pack(fill=tk.BOTH, expand=True)
+
+            self.empresa_nombre_var = tk.StringVar(value=empresa_info.get("nombre", ""))
+            self.empresa_rnc_var = tk.StringVar(value=empresa_info.get("rnc", ""))
+            self.empresa_direccion_var = tk.StringVar(value=empresa_info.get("direccion", ""))
+            self.empresa_ciudad_var = tk.StringVar(value=empresa_info.get("ciudad", ""))
+            self.empresa_telefono_var = tk.StringVar(value=empresa_info.get("telefono", ""))
+            self.empresa_correo_var = tk.StringVar(value=empresa_info.get("correo", ""))
+            self.empresa_tagline_var = tk.StringVar(value=empresa_info.get("tagline", ""))
+            self.empresa_logo_var = tk.StringVar(value=empresa_info.get("logo_path", ""))
+
+            campos = [
+                ("Nombre Comercial:", self.empresa_nombre_var),
+                ("RNC:", self.empresa_rnc_var),
+                ("Dirección:", self.empresa_direccion_var),
+                ("Ciudad / Provincia:", self.empresa_ciudad_var),
+                ("Teléfono:", self.empresa_telefono_var),
+                ("Correo electrónico:", self.empresa_correo_var),
+                ("Descripción corta:", self.empresa_tagline_var),
+            ]
+            for idx, (label, var) in enumerate(campos):
+                ttk.Label(datos_frame, text=label).grid(row=idx, column=0, sticky="w", padx=5, pady=5)
+                ttk.Entry(datos_frame, textvariable=var, width=50).grid(row=idx, column=1, sticky="ew", padx=5, pady=5)
+            datos_frame.columnconfigure(1, weight=1)
+
+            ttk.Label(datos_frame, text="Logo (PNG):").grid(row=len(campos), column=0, sticky="w", padx=5, pady=5)
+            ttk.Entry(datos_frame, textvariable=self.empresa_logo_var, width=50, state="readonly").grid(row=len(campos), column=1, sticky="ew", padx=5, pady=5)
+
+            logo_buttons = ttk.Frame(datos_frame)
+            logo_buttons.grid(row=len(campos)+1, column=0, columnspan=2, sticky="w", padx=5, pady=(0, 10))
+            ttk.Button(logo_buttons, text="Seleccionar Logo", style="Secondary.TButton", command=self._seleccionar_logo_empresa).pack(side=tk.LEFT, padx=(0, 8))
+            ttk.Button(logo_buttons, text="Limpiar", command=lambda: self.empresa_logo_var.set("")).pack(side=tk.LEFT)
+
+            ttk.Button(
+                datos_frame,
+                text="Guardar Información",
+                style="Accent.TButton",
+                command=self._guardar_datos_empresa
+            ).grid(row=len(campos)+2, column=0, columnspan=2, pady=(12, 0))
+        else:
+            ttk.Label(
+                cont,
+                text="Solo un administrador puede modificar la información del negocio.",
+                style="Muted.TLabel"
+            ).pack(fill=tk.X, pady=(10, 0))
 
     def _mostrar_detalle_venta_seleccionada_cliente(self, event=None):
         """Muestra detalle de la venta seleccionada en el historial del cliente."""
@@ -1469,11 +2423,13 @@ class ColmadoApp:
                         f"RD$ {float(prod.get('subtotal', 0.0)):.2f}"
                     )
                 )
+            self._apply_treeview_striping(self.tree_detalle_venta_cliente)
         except Exception as e:
             print(f"Error mostrando detalle de venta del cliente: {e}")
 
     def _mostrar_factura_en_ventana(self, texto_factura, venta_id, nombre_archivo_factura_guardada=None):
         factura_window = tk.Toplevel(self.root)
+        self._style_toplevel(factura_window)
         factura_window.title(f"Factura #: {venta_id:05d}")
         factura_window.geometry("480x650") 
         factura_window.transient(self.root)
@@ -1481,6 +2437,7 @@ class ColmadoApp:
         text_frame = ttk.Frame(factura_window); text_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         text_widget = tk.Text(text_frame, wrap=tk.WORD, font=("Courier New", 9), padx=10, pady=10, relief=tk.SOLID, borderwidth=1)
         text_widget.insert(tk.END, texto_factura); text_widget.config(state=tk.DISABLED)
+        self._style_scrolled_text(text_widget)
         scrollbar = ttk.Scrollbar(text_frame, orient=tk.VERTICAL, command=text_widget.yview)
         text_widget.configure(yscrollcommand=scrollbar.set)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y); text_widget.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
@@ -1540,7 +2497,7 @@ class ColmadoApp:
         except Exception:
             pass
 
-        texto_factura = generar_texto_factura(venta_obj, nombre_cliente)
+        texto_factura = generar_texto_factura(venta_obj, nombre_cliente, datos_empresa=self._get_empresa_info())
         self._mostrar_factura_en_ventana(texto_factura, venta_id)
 
     def _print_text_to_system(self, texto: str):
@@ -1583,13 +2540,14 @@ class ColmadoApp:
     def historial_proveedor_action(self):
         if not self._guard('historial_proveedor'):
             return
+        self._set_active_nav_action('historial_proveedor')
         self._clear_display_frame()
         seleccion_frame = ttk.Frame(self.display_frame, padding="5")
         seleccion_frame.pack(fill=tk.X, pady=5)
         ttk.Label(seleccion_frame, text="Seleccionar Proveedor:").pack(side=tk.LEFT, padx=(0, 5))
         self.proveedor_hist_combo = ttk.Combobox(seleccion_frame, textvariable=self.proveedor_hist_seleccionado_var, state="readonly", width=30)
         self.proveedor_hist_combo.pack(side=tk.LEFT, padx=5)
-        btn_ver_historial = ttk.Button(seleccion_frame, text="Ver Historial", command=self._ver_historial_proveedor_seleccionado)
+        btn_ver_historial = ttk.Button(seleccion_frame, text="Ver Historial", command=self._ver_historial_proveedor_seleccionado, style="Accent.TButton")
         btn_ver_historial.pack(side=tk.LEFT, padx=10)
         if self._allowed('editar_proveedor'):
             ttk.Button(seleccion_frame, text="Editar Proveedor", command=self._abrir_editar_proveedor_dialog, style='Accent.TButton').pack(side=tk.LEFT, padx=5)
@@ -1662,6 +2620,7 @@ class ColmadoApp:
                     prod.get("categoria", "")
                 ))
             tree.pack(fill=tk.BOTH, expand=True)
+            self._apply_treeview_striping(tree)
             resumen = f"Total productos: {total_productos} | Stock total: {total_stock}"
             ttk.Label(container, text=resumen, font=("Arial", 11, "bold")).pack(pady=5, anchor="e")
         else:
@@ -1680,6 +2639,7 @@ class ColmadoApp:
         if not prov:
             messagebox.showerror("Error", "Proveedor no encontrado.", parent=self.display_frame); return
         dlg = tk.Toplevel(self.root)
+        self._style_toplevel(dlg)
         dlg.title(f"Editar Proveedor #{proveedor_id}")
         dlg.geometry("460x220")
         dlg.transient(self.root); dlg.grab_set()

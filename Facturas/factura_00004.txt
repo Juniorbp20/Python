@@ -1,0 +1,24 @@
+       *** PYCOLMADO *** 
+     Avenida Ejemplo #123          
+   Paso Hondo, Tenares             
+       RNC: 101-00000-1       
+       Tel: 809-000-0000       
+=============================================
+FACTURA #: 00004
+Fecha y Hora: 2025-11-08 21:07:18
+Cliente: Consumidor Final
+---------------------------------------------
+Cant Descripcion           ITBIS/U.     Monto
+---------------------------------------------
+   1 Aceite #002          RD$  79.12 RD$ 518.68
+---------------------------------------------
+           SUBTOTAL SIN ITBIS: RD$   439.56
+                  ITBIS TOTAL: RD$    79.12
+           SUBTOTAL CON ITBIS: RD$   518.68
+           TOTAL NETO A PAGAR: RD$   518.68
+---------------------------------------------
+              DINERO RECIBIDO: RD$   600.00
+              CAMBIO DEVUELTO: RD$    81.32
+=============================================
+    ¡Gracias por su compra!    
+=============================================

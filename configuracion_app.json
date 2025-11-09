@@ -1,0 +1,12 @@
+{
+  "tema": "sistema",
+  "empresa": {
+    "nombre": "JB solucion",
+    "rnc": "101-00000-1",
+    "direccion": "Avenida Ejemplo #123",
+    "ciudad": "Paso Hondo, Tenares",
+    "telefono": "809-000-0000",
+    "correo": "contacto@pycolmado.com",
+    "logo_path": "C:/Users/Gustavo J. Bonifacio/Downloads/JB_solutions_200x200_circle.png"
+  }
+}

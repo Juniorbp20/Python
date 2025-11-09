@@ -1,0 +1,23 @@
+       *** PYCOLMADO *** 
+     Avenida Ejemplo #123    
+   La Vega, Republica Dominicana  
+       RNC: 101-00000-1       
+=============================================
+FACTURA #: 00002
+Fecha y Hora: 2025-10-31 17:42:19
+Cliente: Consumidor Final
+---------------------------------------------
+Cant Descripcion           ITBIS/U.     Monto
+---------------------------------------------
+ 150 clavo                RD$  52.20 RD$51330.00
+---------------------------------------------
+           SUBTOTAL SIN ITBIS: RD$ 43500.00
+                  ITBIS TOTAL: RD$  7830.00
+           SUBTOTAL CON ITBIS: RD$ 51330.00
+           TOTAL NETO A PAGAR: RD$ 51330.00
+---------------------------------------------
+              DINERO RECIBIDO: RD$ 60000.00
+              CAMBIO DEVUELTO: RD$  8670.00
+=============================================
+    ¡Gracias por su compra!    
+=============================================

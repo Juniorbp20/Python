@@ -128,6 +128,11 @@ def obtener_lista_clientes_para_combobox() -> List[Dict]:
     return [{'id': r['id'], 'nombre': r['nombre']} for r in rows]
 
 
+def obtener_clientes_para_tabla_gui() -> List[Dict]:
+    """Devuelve clientes con datos básicos para mostrarlos en tablas de la GUI."""
+    return fetch_all("SELECT id, nombre, telefono, direccion FROM clientes ORDER BY nombre")
+
+
 def guardar_nuevo_cliente_desde_gui(nombre: str, telefono: str, direccion: str) -> Dict:
     if not (nombre.strip() and telefono.strip()):
         return {"exito": False, "mensaje": "El nombre y el teléfono son obligatorios."}
@@ -168,6 +173,11 @@ def obtener_historial_compras_cliente_gui(cliente_id: int) -> Dict:
 def obtener_lista_proveedores_para_combobox() -> List[Dict]:
     rows = fetch_all("SELECT id, nombre FROM proveedores ORDER BY nombre")
     return [{'id': r['id'], 'nombre': r['nombre']} for r in rows]
+
+
+def obtener_proveedores_para_tabla_gui() -> List[Dict]:
+    """Devuelve proveedores con datos básicos para mostrarlos en tablas de la GUI."""
+    return fetch_all("SELECT id, nombre, telefono, direccion FROM proveedores ORDER BY nombre")
 
 
 def guardar_nuevo_proveedor_desde_gui(nombre: str, telefono: str, direccion: str) -> Dict:
@@ -379,3 +389,25 @@ def eliminar_usuario_por_id(user_id: int, usuario_actual: Optional[str] = None) 
             return {"exito": False, "mensaje": "No se puede eliminar el último usuario administrador."}
     execute("DELETE FROM usuarios WHERE id=%s", (user_id,))
     return {"exito": True, "mensaje": f"Usuario ID {user_id} eliminado."}
+
+
+def actualizar_password_usuario(user_id: int, password_actual: str, password_nuevo: str) -> Dict:
+    """Actualiza la contraseña verificando la actual."""
+    if not password_nuevo.strip():
+        return {"exito": False, "mensaje": "La nueva contraseña no puede estar vacía."}
+    user = fetch_one("SELECT id, password FROM usuarios WHERE id=%s", (user_id,))
+    if not user:
+        return {"exito": False, "mensaje": "Usuario no encontrado."}
+
+    stored = user.get('password') or ''
+    valid = False
+    if is_hashed(stored):
+        valid = verify_password(password_actual, stored)
+    else:
+        valid = password_actual == stored
+    if not valid:
+        return {"exito": False, "mensaje": "La contraseña actual no coincide."}
+
+    hashed_new = hash_password(password_nuevo.strip())
+    execute("UPDATE usuarios SET password=%s WHERE id=%s", (hashed_new, user_id))
+    return {"exito": True, "mensaje": "Contraseña actualizada correctamente."}

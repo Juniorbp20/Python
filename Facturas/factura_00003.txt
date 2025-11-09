@@ -1,0 +1,27 @@
+       *** PYCOLMADO *** 
+     Avenida Ejemplo #123    
+   La Vega, Republica Dominicana  
+       RNC: 101-00000-1       
+=============================================
+FACTURA #: 00003
+Fecha y Hora: 2025-11-08 20:39:51
+Cliente: Consumidor Final
+---------------------------------------------
+Cant Descripcion           ITBIS/U.     Monto
+---------------------------------------------
+   1 arroz americano      RD$  24.30 RD$ 159.30
+   1 Aceite #002          RD$  79.12 RD$ 518.68
+   1 Azúcar #001          RD$  49.62 RD$ 325.29
+   2 Café #199            RD$ 106.33 RD$1394.10
+---------------------------------------------
+           SUBTOTAL SIN ITBIS: RD$  2031.67
+                  ITBIS TOTAL: RD$   365.70
+           SUBTOTAL CON ITBIS: RD$  2397.37
+                    DESCUENTO: RD$   397.37
+           TOTAL NETO A PAGAR: RD$  2000.00
+---------------------------------------------
+              DINERO RECIBIDO: RD$  2500.00
+              CAMBIO DEVUELTO: RD$   500.00
+=============================================
+    ¡Gracias por su compra!    
+=============================================

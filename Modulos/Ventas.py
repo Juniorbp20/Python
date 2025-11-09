@@ -306,18 +306,27 @@ def obtener_ventas_para_historial_gui(fecha_inicio_str=None, fecha_fin_str=None)
     return {'ventas_mostradas': ventas_para_gui, 'total_periodo': total_del_periodo_neto}
 
 
-def generar_texto_factura(datos_venta, nombre_cliente_str="Consumidor Final"):
+def generar_texto_factura(datos_venta, nombre_cliente_str="Consumidor Final", datos_empresa=None):
     if nombre_cliente_str == "Ninguno" or not nombre_cliente_str:
         nombre_cliente_str = "Consumidor Final"
+
+    empresa = datos_empresa or {}
+    nombre_negocio = empresa.get("nombre", "PyColmado")
+    direccion = empresa.get("direccion", "Avenida Ejemplo #123")
+    ciudad = empresa.get("ciudad", "La Vega, Republica Dominicana")
+    rnc = empresa.get("rnc", "101-00000-1")
+    telefono = empresa.get("telefono")
 
     separador_largo = "=" * 45
     separador_corto = "-" * 45
     texto = []
 
-    texto.append("       *** PYCOLMADO *** ")
-    texto.append("     Avenida Ejemplo #123    ")
-    texto.append("   La Vega, Republica Dominicana  ")
-    texto.append("       RNC: 101-00000-1       ")
+    texto.append(f"       *** {nombre_negocio.upper()} *** ")
+    texto.append(f"     {direccion[:30]:<30}")
+    texto.append(f"   {ciudad[:32]:<32}")
+    texto.append(f"       RNC: {rnc}       ")
+    if telefono:
+        texto.append(f"       Tel: {telefono}       ")
     texto.append(separador_largo)
 
     texto.append(f"FACTURA #: {datos_venta.get('id', 'N/A'):05d}")
