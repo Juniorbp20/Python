@@ -1,10 +1,10 @@
-import os 
+﻿import os 
 import platform
 import tempfile
 import shutil
 import subprocess
 import tkinter as tk
-from tkinter import ttk, messagebox, filedialog, scrolledtext 
+from tkinter import ttk, messagebox, filedialog, scrolledtext, colorchooser 
 import datetime
 import json
 from pathlib import Path
@@ -29,10 +29,12 @@ from Modulos.Repo import (
     actualizar_proveedor, obtener_proveedor_por_id,
     # Usuarios
     autenticar_usuario, crear_usuario, obtener_usuarios_para_gui, eliminar_usuario_por_id, actualizar_password_usuario,
+    # Configuracion
+    obtener_configuracion_app, guardar_configuracion_app,
     # Productos extra
     obtener_producto_por_id, actualizar_producto,
 )
-from Modulos.ui_styles import configure_app_styles, get_available_themes
+from Modulos.ui_styles import configure_app_styles, get_available_themes, get_theme_palette
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -49,8 +51,8 @@ DEFAULT_APP_CONFIG = {
         "tagline": "Gestiona inventario, ventas y proveedores desde un solo lugar",
         "logo_path": ""
     },
+    "colores_botones": {}
 }
-
 
 def _load_logo_image(path: str, max_size: int = 200):
     if not path:
@@ -90,6 +92,12 @@ def _draw_default_logo(parent_frame, color):
 
 def _read_saved_theme_key() -> str:
     try:
+        data_db = obtener_configuracion_app()
+        if isinstance(data_db, dict):
+            return str(data_db.get("tema", "sistema")).lower()
+    except Exception:
+        pass
+    try:
         if CONFIG_FILE_PATH.exists():
             with CONFIG_FILE_PATH.open("r", encoding="utf-8") as fh:
                 data = json.load(fh)
@@ -104,9 +112,14 @@ class LoginDialog(tk.Toplevel):
     """Diálogo modal de login. Retorna en self.result un dict con 'exito' y 'usuario'."""
     def __init__(self, master):
         super().__init__(master)
-        self.title("Bienvenido a PyColmado")
+        self.empresa_info = self._load_empresa_info()
+        self.title(f"Bienvenido a {self.empresa_info.get('nombre', 'PyColmado')}")
         self.resizable(False, False)
-        self.transient(master)
+        try:
+            if master is not None and str(master.state()) != "withdrawn":
+                self.transient(master)
+        except Exception:
+            pass
         self.grab_set()  # Modal
         self.result = {"exito": False, "usuario": None}
         self.colors = configure_app_styles(self, theme_name=_read_saved_theme_key())
@@ -121,15 +134,7 @@ class LoginDialog(tk.Toplevel):
         main.columnconfigure(1, weight=1)
         main.rowconfigure(0, weight=1)
 
-        empresa_info = DEFAULT_APP_CONFIG["empresa"]
-        try:
-            if CONFIG_FILE_PATH.exists():
-                with CONFIG_FILE_PATH.open("r", encoding="utf-8") as fh:
-                    stored = json.load(fh)
-                if isinstance(stored, dict) and isinstance(stored.get("empresa"), dict):
-                    empresa_info = stored.get("empresa", empresa_info)
-        except Exception:
-            pass
+        empresa_info = self.empresa_info
         brand_color = self.colors.get("accent", "#2F66FF")
 
         # Panel izquierdo
@@ -175,19 +180,20 @@ class LoginDialog(tk.Toplevel):
         self.protocol("WM_DELETE_WINDOW", self._on_cancel)
         self.after(100, lambda: entry_user.focus_set())
 
-        # Asegurar que el diálogo sea visible y centrado
+        # Centrar una vez que el loop principal esté activo
+        self.after(10, self._center_dialog)
+
+    def _load_empresa_info(self) -> dict:
+        info = DEFAULT_APP_CONFIG["empresa"].copy()
         try:
-            self.update_idletasks()
-            self.wait_visibility()  # Forzar que sea visible antes de centrar
-            w = self.winfo_width() or 320
-            h = self.winfo_height() or 150
-            sw = self.winfo_screenwidth()
-            sh = self.winfo_screenheight()
-            x = int((sw - w) / 2)
-            y = int((sh - h) / 3)
-            self.geometry(f"{w}x{h}+{x}+{y}")
+            cfg = obtener_configuracion_app()
+            if isinstance(cfg, dict):
+                empresa_cfg = cfg.get("empresa")
+                if isinstance(empresa_cfg, dict):
+                    info.update({k: v for k, v in empresa_cfg.items() if v not in (None, "")})
         except Exception:
             pass
+        return info
 
     def _on_login(self):
         username = self.user_var.get()
@@ -203,18 +209,35 @@ class LoginDialog(tk.Toplevel):
         self.result = {"exito": False, "usuario": None}
         self.destroy()
 
+    def _center_dialog(self):
+        """Centra el login en pantalla cuando la ventana ya es visible."""
+        try:
+            self.update_idletasks()
+            w = self.winfo_width() or 320
+            h = self.winfo_height() or 150
+            sw = self.winfo_screenwidth()
+            sh = self.winfo_screenheight()
+            x = int((sw - w) / 2)
+            y = int((sh - h) / 3)
+            self.geometry(f"{w}x{h}+{x}+{y}")
+        except Exception:
+            pass
+
+
 MARGEN_GANANCIA_POR_DEFECTO = 0.30 # 30% de margen sobre el precio de compra
 
 class ColmadoApp:
     def __init__(self, root_window, current_user: dict | None = None):
         self.root = root_window
-        self.root.title("Sistema de Colmado PyColmado")
+        self.app_config = self._load_app_config()
+        if "colores_botones" not in self.app_config or not isinstance(self.app_config["colores_botones"], dict):
+            self.app_config["colores_botones"] = {}
+        self._update_window_title()
         self.root.geometry("1000x750")
         self.available_theme_options = get_available_themes()
         self._theme_label_by_key = {opt["key"]: opt["label"] for opt in self.available_theme_options}
         self._theme_key_by_label = {opt["label"]: opt["key"] for opt in self.available_theme_options}
         self._active_nav_key: str | None = None
-        self.app_config = self._load_app_config()
         self.current_theme_key = self.app_config.get("tema", "sistema")
         # Estilos y tema de ttk
         self.colors = self._apply_theme(self.current_theme_key)
@@ -310,19 +333,34 @@ class ColmadoApp:
 
         actions_frame = self._create_actions_panel(body_frame)
 
-        user_card = ttk.Frame(actions_frame, style="UserCard.TFrame", padding="12 10")
-        user_card.pack(fill=tk.X, pady=(0, 12))
-        ttk.Label(user_card, text="Sesión activa", style="Muted.TLabel").pack(anchor="w")
-        ttk.Label(
+        card_bg = self.colors.get("panel_alt", self.colors.get("panel", self.colors.get("nav_bg", "#ffffff")))
+        card_fg = self._get_contrasting_color(card_bg)
+        user_card = tk.Frame(actions_frame, bg=card_bg, padx=14, pady=10, highlightthickness=0, bd=0)
+        user_card.pack(fill=tk.X, padx=12, pady=(0, 12))
+        self.session_card_frame = user_card
+        self.session_card_labels = []
+        lbl_title = tk.Label(user_card, text="Sesión activa", bg=card_bg, fg=card_fg, font=("Segoe UI", 10, "bold"))
+        lbl_title.pack(anchor="w")
+        self.session_card_labels.append(lbl_title)
+        lbl_user = tk.Label(
             user_card,
             text=f"{self.current_user.get('username','')} · {self.current_user.get('rol','').title()}",
-            style="CardTitle.TLabel"
-        ).pack(anchor="w", pady=(2, 0))
-        ttk.Label(
+            bg=card_bg,
+            fg=card_fg,
+            font=("Segoe UI", 10)
+        )
+        lbl_user.pack(anchor="w", pady=(4, 0))
+        self.session_card_labels.append(lbl_user)
+        self.nav_clock_label = tk.Label(
             user_card,
-            text=datetime.date.today().strftime("%d %b %Y"),
-            style="Muted.TLabel"
-        ).pack(anchor="w", pady=(2, 0))
+            text="",
+            bg=card_bg,
+            fg=card_fg,
+            font=("Segoe UI", 9)
+        )
+        self.nav_clock_label.pack(anchor="w", pady=(2, 0))
+        self.session_card_labels.append(self.nav_clock_label)
+        self._start_dashboard_clock(self.nav_clock_label, full_format=False)
 
         self.nav_buttons = {}
         nav_items = [
@@ -341,12 +379,12 @@ class ColmadoApp:
         for text, callback, permission in nav_items:
             if self._allowed(permission):
                 btn = ttk.Button(actions_frame, text=text, command=callback, style="Nav.TButton")
-                btn.pack(fill=tk.X, pady=4)
+                btn.pack(fill=tk.X, padx=12, pady=4)
                 self.nav_buttons[permission] = btn
 
-        ttk.Separator(actions_frame, orient=tk.HORIZONTAL, style="Nav.TSeparator").pack(fill=tk.X, pady=(10, 12))
+        ttk.Separator(actions_frame, orient=tk.HORIZONTAL, style="Nav.TSeparator").pack(fill=tk.X, padx=12, pady=(10, 12))
         btn_salir = ttk.Button(actions_frame, text="Salir", command=self.root.quit, style="Exit.TButton")
-        btn_salir.pack(fill=tk.X, pady=(6, 0))
+        btn_salir.pack(fill=tk.X, padx=12, pady=(6, 0))
 
         self.display_frame = ttk.Frame(body_frame, padding="20 18", style="Content.TFrame")
         self.display_frame.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
@@ -368,33 +406,33 @@ class ColmadoApp:
             text=f"Bienvenido {self.current_user.get('username','')} ({self.current_user.get('rol','')}).",
             style="Welcome.TLabel"
         ).pack(anchor="w", pady=(0, 4))
+        clock_label = ttk.Label(container, text="", style="Subheader.TLabel")
+        clock_label.pack(anchor="w", pady=(0, 4))
+        self._start_dashboard_clock(clock_label)
+
         ttk.Label(
             container,
             text="Resumen del sistema",
             style="Subheader.TLabel"
-        ).pack(anchor="w", pady=(0, 12))
+        ).pack(anchor="w", pady=(4, 12))
 
         stats = self._collect_dashboard_metrics()
-        table_frame = ttk.Frame(container, style="Content.TFrame")
-        table_frame.pack(fill=tk.X, pady=(0, 14))
+        self.dashboard_cards = []
+        cards_frame = ttk.Frame(container, style="Content.TFrame")
+        cards_frame.pack(fill=tk.X, pady=(0, 14))
 
-        cols = ("concepto", "valor")
-        table_height = max(len(stats), 4)
-        self.dashboard_table = ttk.Treeview(
-            table_frame,
-            columns=cols,
-            show="headings",
-            height=table_height
-        )
-        self.dashboard_table.heading("concepto", text="Indicador")
-        self.dashboard_table.heading("valor", text="Valor")
-        self.dashboard_table.column("concepto", width=280, anchor="w", stretch=True)
-        self.dashboard_table.column("valor", width=180, anchor="center", stretch=False)
         for concepto, valor in stats:
-            self.dashboard_table.insert("", tk.END, values=(concepto, valor))
-        self.dashboard_table.pack(fill=tk.X, expand=False)
-        self.dashboard_table.bind("<Double-1>", self._on_dashboard_double_click)
-        self._apply_treeview_striping(self.dashboard_table)
+            text = f"{concepto}\n{valor}"
+            btn = ttk.Button(
+                cards_frame,
+                text=text,
+                style="Nav.TButton",
+                command=(lambda c=concepto: self._on_dashboard_metric_click(c) if c == "Ventas del dia" else None)
+            )
+            btn.pack(fill=tk.X, pady=4)
+            if concepto != "Ventas del dia":
+                btn.state(["disabled"])
+            self.dashboard_cards.append(btn)
 
         ttk.Label(
             container,
@@ -414,35 +452,33 @@ class ColmadoApp:
                 pass
 
     def _create_actions_panel(self, parent_frame):
-        container = ttk.Frame(parent_frame, style="Background.TFrame")
+        container = ttk.Frame(parent_frame, style="Content.TFrame")
         container.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 20))
+        self.nav_container_frame = container
 
-        canvas_bg = self.colors.get("nav_bg", "#f0f0f0")
+        canvas_bg = self.colors.get("panel", self.colors.get("nav_bg", "#f0f0f0"))
         self.nav_canvas = tk.Canvas(
             container,
             highlightthickness=0,
             borderwidth=0,
             background=canvas_bg,
-            width=230
+            width=240
         )
-        vsb = ttk.Scrollbar(container, orient=tk.VERTICAL, command=self.nav_canvas.yview)
-        self.nav_canvas.configure(yscrollcommand=vsb.set)
-        vsb.pack(side=tk.RIGHT, fill=tk.Y)
+        self.nav_scrollbar = ttk.Scrollbar(container, orient=tk.VERTICAL, command=self.nav_canvas.yview)
+        self.nav_canvas.configure(yscrollcommand=self.nav_scrollbar.set)
         self.nav_canvas.pack(side=tk.LEFT, fill=tk.Y, expand=False)
+        if self.nav_canvas.bbox("all"):
+            self.nav_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-        actions_frame = ttk.LabelFrame(
-            self.nav_canvas,
-            text="Acciones Principales",
-            padding="18 16 18 18",
-            style="Nav.TLabelframe"
-        )
+        actions_frame = ttk.Frame(self.nav_canvas, style="Content.TFrame", padding="18 16 18 18")
+        ttk.Label(actions_frame, text="Acciones Principales", style="Subheader.TLabel").pack(anchor="w", padx=12, pady=(0, 10))
         self.nav_canvas_window = self.nav_canvas.create_window((0, 0), window=actions_frame, anchor="nw")
 
         actions_frame.bind(
             "<Configure>",
-            lambda e: self.nav_canvas.configure(scrollregion=self.nav_canvas.bbox("all"))
+            lambda e: self._update_nav_scrollregion()
         )
-        self.nav_canvas.bind("<Configure>", self._on_nav_canvas_configure)
+        self.nav_canvas.bind("<Configure>", lambda e: self._update_nav_scrollregion())
         self.nav_canvas.bind("<Enter>", lambda e: self.nav_canvas.bind_all("<MouseWheel>", self._on_nav_mousewheel))
         self.nav_canvas.bind("<Leave>", lambda e: self.nav_canvas.unbind_all("<MouseWheel>"))
         return actions_frame
@@ -450,6 +486,20 @@ class ColmadoApp:
     def _on_nav_canvas_configure(self, event):
         if hasattr(self, 'nav_canvas_window'):
             self.nav_canvas.itemconfig(self.nav_canvas_window, width=event.width)
+        self._update_nav_scrollregion()
+
+    def _update_nav_scrollregion(self):
+        if not hasattr(self, 'nav_canvas'):
+            return
+        self.nav_canvas.configure(scrollregion=self.nav_canvas.bbox("all"))
+        bbox = self.nav_canvas.bbox("all")
+        if bbox and hasattr(self, 'nav_canvas') and hasattr(self, 'nav_scrollbar'):
+            content_height = bbox[3] - bbox[1]
+            canvas_height = max(1, self.nav_canvas.winfo_height())
+            if content_height > canvas_height:
+                self.nav_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+            else:
+                self.nav_scrollbar.pack_forget()
 
     def _on_nav_mousewheel(self, event):
         if hasattr(self, 'nav_canvas'):
@@ -459,47 +509,82 @@ class ColmadoApp:
                 pass
 
     def _load_app_config(self) -> dict:
+        """Lee la configuracion desde la base de datos, con fallback al JSON legacy."""
         data = json.loads(json.dumps(DEFAULT_APP_CONFIG))  # deep copy defaults
-        file_exists = CONFIG_FILE_PATH.exists()
+        loaded_from_db = False
         try:
-            if file_exists:
-                with CONFIG_FILE_PATH.open("r", encoding="utf-8") as fh:
-                    stored = json.load(fh)
-                if isinstance(stored, dict):
-                    data.update({k: stored.get(k, data.get(k)) for k in stored.keys()})
-                    stored_empresa = stored.get("empresa") or {}
-                    empresa_defaults = DEFAULT_APP_CONFIG["empresa"].copy()
-                    empresa_defaults.update(stored_empresa)
-                    data["empresa"] = empresa_defaults
+            stored = obtener_configuracion_app()
+            if isinstance(stored, dict):
+                loaded_from_db = True
+                data["tema"] = str(stored.get("tema", data["tema"])).lower()
+                stored_empresa = stored.get("empresa") or {}
+                empresa_defaults = DEFAULT_APP_CONFIG["empresa"].copy()
+                empresa_defaults.update(stored_empresa)
+                data["empresa"] = empresa_defaults
+                colores = stored.get("colores_botones") or {}
+                if isinstance(colores, dict):
+                    data["colores_botones"] = colores.copy()
         except Exception as exc:
-            print(f"Advertencia: no se pudo cargar configuracion del sistema: {exc}")
-        if not file_exists:
+            print(f"Advertencia: no se pudo leer configuracion desde la base de datos: {exc}")
+
+        if not loaded_from_db:
             try:
-                with CONFIG_FILE_PATH.open("w", encoding="utf-8") as fh:
-                    json.dump(data, fh, indent=2, ensure_ascii=False)
-            except Exception:
-                pass
+                if CONFIG_FILE_PATH.exists():
+                    with CONFIG_FILE_PATH.open("r", encoding="utf-8") as fh:
+                        stored = json.load(fh)
+                    if isinstance(stored, dict):
+                        data["tema"] = str(stored.get("tema", data["tema"])).lower()
+                        empresa_defaults = DEFAULT_APP_CONFIG["empresa"].copy()
+                        empresa_defaults.update(stored.get("empresa") or {})
+                        data["empresa"] = empresa_defaults
+                        colores = stored.get("colores_botones") or {}
+                        if isinstance(colores, dict):
+                            data["colores_botones"] = colores.copy()
+            except Exception as exc:
+                print(f"Advertencia: no se pudo cargar configuracion legacy desde JSON: {exc}")
+            # Intentar sembrar la configuracion en la base de datos para futuras lecturas
+            try:
+                guardar_configuracion_app(data)
+            except Exception as exc:
+                print(f"Advertencia: no se pudo guardar configuracion inicial en DB: {exc}")
+
         return data
 
     def _save_app_config(self):
         try:
-            with CONFIG_FILE_PATH.open("w", encoding="utf-8") as fh:
-                json.dump(self.app_config, fh, indent=2, ensure_ascii=False)
+            guardar_configuracion_app(self.app_config)
         except Exception as exc:
-            print(f"Advertencia: no se pudo guardar configuracion del sistema: {exc}")
+            print(f"Advertencia: no se pudo guardar configuracion en DB: {exc}")
 
     def _apply_theme(self, theme_key: str | None):
         self.current_theme_key = (theme_key or "sistema").lower()
-        colors = configure_app_styles(self.root, theme_name=self.current_theme_key)
+        custom_palette = self._compose_custom_palette(self.current_theme_key)
+        colors = configure_app_styles(self.root, theme_name=self.current_theme_key, custom_palette=custom_palette)
         self.colors = colors
         self.root.configure(bg=self.colors.get("bg", "#ffffff"))
         # Reaplicar estilo activo en menu
         if hasattr(self, '_active_nav_key'):
             self._set_active_nav_action(self._active_nav_key)
+        self._refresh_nav_styles()
+        self._refresh_config_styles()
         return colors
+
+    def _compose_custom_palette(self, theme_key: str) -> dict | None:
+        overrides = self.app_config.get("colores_botones") or {}
+        valid_overrides = {k: v for k, v in overrides.items() if isinstance(v, str) and v.strip()}
+        if not valid_overrides:
+            return None
+        base = get_theme_palette(theme_key)
+        base.update(valid_overrides)
+        return base
 
     def _get_empresa_info(self) -> dict:
         return (self.app_config.get("empresa") or DEFAULT_APP_CONFIG["empresa"]).copy()
+
+    def _update_window_title(self):
+        empresa_info = self._get_empresa_info()
+        empresa_nombre = empresa_info.get("nombre") or DEFAULT_APP_CONFIG["empresa"]["nombre"]
+        self.root.title(f"Sistema de Colmado {empresa_nombre}".strip())
 
     def _aplicar_tema_desde_config(self):
         if not hasattr(self, 'theme_selector_var'):
@@ -508,6 +593,7 @@ class ColmadoApp:
         theme_key = self._theme_key_by_label.get(selected_label, "sistema")
         self._apply_theme(theme_key)
         self.app_config["tema"] = theme_key
+        self.app_config["colores_botones"] = {}
         self._save_app_config()
         messagebox.showinfo("Tema actualizado", "El tema se aplicó correctamente.", parent=self.display_frame)
 
@@ -539,6 +625,7 @@ class ColmadoApp:
             "logo_path": logo_path,
         }
         self._save_app_config()
+        self._update_window_title()
         messagebox.showinfo("Datos guardados", "La información del negocio se actualizó correctamente.", parent=self.display_frame)
 
     def _seleccionar_logo_empresa(self):
@@ -551,6 +638,92 @@ class ColmadoApp:
         )
         if path:
             self.empresa_logo_var.set(path)
+
+    def _seleccionar_color_boton(self, key: str):
+        var = getattr(self, "_color_override_vars", {}).get(key)
+        if not var:
+            return
+        initial = var.get() or self.colors.get(key, "#0f7048")
+        color = colorchooser.askcolor(color=initial, parent=self.display_frame)
+        if color and color[1]:
+            var.set(color[1])
+
+    def _guardar_colores_botones(self):
+        if not hasattr(self, "_color_override_vars"):
+            return
+        overrides = {}
+        for key, var in self._color_override_vars.items():
+            value = (var.get() or "").strip()
+            if value:
+                overrides[key] = value
+        self.app_config["colores_botones"] = overrides
+        self._save_app_config()
+        self._apply_theme(self.current_theme_key)
+        messagebox.showinfo("Colores actualizados", "Se aplicaron los nuevos colores de botones.", parent=self.display_frame)
+
+    def _restablecer_colores_botones(self):
+        if not hasattr(self, "_color_override_vars"):
+            return
+        for var in self._color_override_vars.values():
+            var.set("")
+        self.app_config["colores_botones"] = {}
+        self._save_app_config()
+        self._apply_theme(self.current_theme_key)
+        messagebox.showinfo("Colores restablecidos", "Se restauraron los colores por defecto del tema.", parent=self.display_frame)
+
+    def _refresh_nav_styles(self):
+        canvas_bg = self.colors.get("panel", self.colors.get("nav_bg", "#f0f0f0"))
+        if hasattr(self, 'nav_canvas'):
+            self.nav_canvas.configure(background=canvas_bg)
+            self._update_nav_scrollregion()
+        if hasattr(self, 'nav_container_frame'):
+            try:
+                self.nav_container_frame.configure(style="Content.TFrame")
+            except Exception:
+                pass
+        self._refresh_session_card_styles()
+
+    def _refresh_session_card_styles(self):
+        """Mantiene el card de sesión alineado con la paleta activa."""
+        card_frame = getattr(self, 'session_card_frame', None)
+        if not card_frame:
+            return
+        card_bg = self.colors.get("panel_alt", self.colors.get("panel", self.colors.get("nav_bg", "#ffffff")))
+        card_fg = self._get_contrasting_color(card_bg)
+        try:
+            card_frame.configure(bg=card_bg)
+        except Exception:
+            pass
+        for label in getattr(self, 'session_card_labels', []) or []:
+            try:
+                label.configure(bg=card_bg, fg=card_fg)
+            except Exception:
+                continue
+
+    def _refresh_config_styles(self):
+        panel_color = self.colors.get("panel", "#ffffff")
+        if hasattr(self, 'config_wrapper') and self.config_wrapper:
+            try:
+                self.config_wrapper.configure(bg=panel_color)
+            except Exception:
+                pass
+        if hasattr(self, 'config_canvas') and self.config_canvas:
+            try:
+                self.config_canvas.configure(bg=panel_color)
+            except Exception:
+                pass
+
+    @staticmethod
+    def _get_contrasting_color(hex_color: str) -> str:
+        def _to_rgb(h):
+            h = h.lstrip("#")
+            return tuple(int(h[i:i+2], 16) for i in (0, 2, 4)) if len(h) == 6 else (31, 41, 51)
+        try:
+            r, g, b = _to_rgb(hex_color)
+        except Exception:
+            r, g, b = (31, 41, 51)
+        luminance = (0.299 * r + 0.587 * g + 0.114 * b)
+        return "#1f2933" if luminance > 180 else "#f5f7fa"
 
     def _collect_dashboard_metrics(self):
         """Genera datos para la tabla de bienvenida."""
@@ -585,17 +758,21 @@ class ColmadoApp:
             stats.append(("Sin datos disponibles", "N/D"))
         return stats
 
-    def _on_dashboard_double_click(self, event=None):
-        if not hasattr(self, 'dashboard_table'):
-            return
-        sel = self.dashboard_table.selection()
-        if not sel:
-            return
-        item = self.dashboard_table.item(sel[0])
-        values = item.get("values", [])
-        if not values:
-            return
-        label = values[0]
+    def _start_dashboard_clock(self, label, full_format: bool = True):
+        def _update():
+            now = datetime.datetime.now()
+            if full_format:
+                text = now.strftime("Fecha: %d %b %Y · Hora: %H:%M:%S")
+            else:
+                text = now.strftime("%d %b %Y · %H:%M:%S")
+            try:
+                label.config(text=text)
+                label.after(1000, _update)
+            except Exception:
+                pass
+        _update()
+
+    def _on_dashboard_metric_click(self, label: str = None):
         if label != "Ventas del dia":
             return
         today = datetime.date.today().strftime("%Y-%m-%d")
@@ -608,7 +785,8 @@ class ColmadoApp:
         dlg = tk.Toplevel(self.root)
         self._style_toplevel(dlg)
         dlg.title(f"Ventas del {fecha_str}")
-        dlg.geometry("600x420")
+        dlg.geometry("760x520")
+        dlg.minsize(640, 460)
         dlg.transient(self.root); dlg.grab_set()
         frame = ttk.Frame(dlg, padding=12)
         frame.pack(fill=tk.BOTH, expand=True)
@@ -632,7 +810,9 @@ class ColmadoApp:
         info_total.pack(anchor="w", pady=(4, 12))
 
         cols = ("id", "cliente", "subtotal", "itbis", "descuento", "total")
-        tree = ttk.Treeview(frame, columns=cols, show="headings", height=10)
+        table_frame = ttk.Frame(frame)
+        table_frame.pack(fill=tk.BOTH, expand=True)
+        tree = ttk.Treeview(table_frame, columns=cols, show="headings", height=10)
         headers = {
             "id": "ID Venta",
             "cliente": "Cliente",
@@ -658,7 +838,7 @@ class ColmadoApp:
                 f"RD$ {venta.get('total_final', 0.0):.2f}"
             ))
 
-        vsb = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=tree.yview)
+        vsb = ttk.Scrollbar(table_frame, orient=tk.VERTICAL, command=tree.yview)
         tree.configure(yscrollcommand=vsb.set)
         vsb.pack(side=tk.RIGHT, fill=tk.Y)
         tree.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
@@ -1154,7 +1334,7 @@ class ColmadoApp:
         for c, base_text in base_map.items():
             arrow = ''
             if c == col:
-                arrow = ' ▲' if not reverse else ' ▼'
+                arrow = ' â–²' if not reverse else ' â–¼'
             tree.heading(c, text=f"{base_text}{arrow}")
 
     def _sort_treeview(self, tree: ttk.Treeview, col: str, numeric: bool, money: bool, reverse: bool = False):
@@ -2312,8 +2492,24 @@ class ColmadoApp:
             return
         self._set_active_nav_action('configuracion')
         self._clear_display_frame()
-        cont = ttk.Frame(self.display_frame, padding="15", style="Content.TFrame")
-        cont.pack(fill=tk.BOTH, expand=True)
+        wrapper = tk.Frame(self.display_frame, bg=self.colors.get("panel", "#ffffff"))
+        wrapper.pack(fill=tk.BOTH, expand=True)
+        self.config_wrapper = wrapper
+        config_canvas = tk.Canvas(wrapper, bg=self.colors.get("panel", "#ffffff"), highlightthickness=0)
+        config_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.config_canvas = config_canvas
+        config_scroll = ttk.Scrollbar(wrapper, orient=tk.VERTICAL, command=config_canvas.yview)
+        config_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        config_canvas.configure(yscrollcommand=config_scroll.set)
+
+        cont = ttk.Frame(config_canvas, padding="15", style="Content.TFrame")
+        self._config_canvas_window = config_canvas.create_window((0, 0), window=cont, anchor="nw")
+
+        def _update_config_scroll(_event=None):
+            config_canvas.configure(scrollregion=config_canvas.bbox("all"))
+            config_canvas.itemconfig(self._config_canvas_window, width=config_canvas.winfo_width())
+        cont.bind("<Configure>", _update_config_scroll)
+        config_canvas.bind("<Configure>", _update_config_scroll)
 
         # Seccion de tema
         tema_frame = ttk.LabelFrame(cont, text="Preferencias de Tema", padding="12")
@@ -2662,35 +2858,34 @@ class ColmadoApp:
         ttk.Button(btns, text='Cerrar', command=dlg.destroy).pack(side=tk.LEFT, padx=5)
  
 if __name__ == "__main__":
-    # Asegurar que los archivos JSON existan antes de iniciar la GUI
-    try:
-        from Modulos.Datos import inicializar_archivos
-        inicializar_archivos()
-    except Exception as e:
-        # No impedir el arranque de la GUI, pero avisar en consola si algo falla
-        print(f"Advertencia: No se pudieron inicializar los archivos de datos. {e}")
+    # Root temporal solo para el login
+    login_root = tk.Tk()
+    login_root.withdraw()  # evitar parpadeo antes de crear el diálogo
 
-    # Mostrar login antes de cargar la app principal
-    root = tk.Tk()
     try:
-        # No ocultar completamente la raíz para evitar "pantalla en blanco"
-        login = LoginDialog(root)
-        # Asegurar procesamiento de eventos para mostrar el diálogo
+        login_dialog = LoginDialog(login_root)
         try:
-            root.update()
+            login_root.update()
         except Exception:
             pass
-        root.wait_window(login)
-        if not login.result.get("exito"):
-            root.destroy()
+        login_root.wait_window(login_dialog)
+
+        if not login_dialog.result.get("exito"):
+            login_root.destroy()
         else:
-            user = login.result.get("usuario") or {}
-            root.title(f"Sistema de Colmado PyColmado - Usuario: {user.get('username','')} ({user.get('rol','')})")
-            app = ColmadoApp(root, current_user=user)
-            root.mainloop()
+            user = login_dialog.result.get("usuario") or {}
+            login_root.destroy()
+
+            app_root = tk.Tk()
+            app_root.state('zoomed')
+            app_root.title(f"Sistema JB solution - Usuario: {user.get('username','')} ({user.get('rol','')})")
+            app = ColmadoApp(app_root, current_user=user)
+            app_root.mainloop()
     except Exception as e:
         print(f"Error durante el proceso de login: {e}")
         try:
-            root.destroy()
+            login_root.destroy()
         except Exception:
             pass
+
+

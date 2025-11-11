@@ -126,6 +126,16 @@ def configure_app_styles(root: Misc, theme_name: str = "claro", custom_palette: 
         translucent_thumb = "#6d6d77"
         translucent_thumb_dark = "#4c4c55"
         style.configure(
+            'TScrollbar',
+            background=translucent_thumb,
+            troughcolor=colors['panel_alt'],
+            arrowcolor=colors['text'],
+            bordercolor=colors['panel_alt'],
+            lightcolor=translucent_thumb,
+            darkcolor=translucent_thumb_dark,
+            relief='flat'
+        )
+        style.configure(
             'Vertical.TScrollbar',
             background=translucent_thumb,
             troughcolor=colors['panel_alt'],
@@ -152,6 +162,11 @@ def configure_app_styles(root: Misc, theme_name: str = "claro", custom_palette: 
         )
         style.map(
             'Horizontal.TScrollbar',
+            background=[('active', translucent_thumb_dark), ('pressed', translucent_thumb_dark)],
+            arrowcolor=[('active', '#ffffff'), ('pressed', '#ffffff')]
+        )
+        style.map(
+            'TScrollbar',
             background=[('active', translucent_thumb_dark), ('pressed', translucent_thumb_dark)],
             arrowcolor=[('active', '#ffffff'), ('pressed', '#ffffff')]
         )

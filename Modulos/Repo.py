@@ -4,12 +4,10 @@ Implementa funciones equivalentes a las de los módulos JSON pero contra MariaDB
 usando PyMySQL. Mantiene los mismos nombres y estructuras esperadas por la GUI.
 """
 
+import json
 from typing import List, Dict, Optional
 from Modulos.DBUtil import fetch_all, fetch_one, execute, transaction, get_connection
 from Modulos.Security import hash_password, verify_password, is_hashed
-from Modulos.Ventas import generar_texto_factura  # reusar
-
-
 # --------------------- Productos ---------------------
 
 def guardar_nuevo_producto(datos_producto_nuevo: Dict) -> Dict:
@@ -332,6 +330,44 @@ def obtener_ventas_para_historial_gui(fecha_inicio_str: Optional[str] = None, fe
     return {'ventas_mostradas': out, 'total_periodo': total_periodo}
 
 
+def generar_texto_factura(datos_venta: Dict, nombre_cliente_str: str = "Consumidor Final", datos_empresa: Optional[Dict] = None) -> str:
+    """Construye un bloque de texto listo para imprimir o guardar."""
+    datos_empresa = datos_empresa or {
+        "nombre": "",
+        "direccion": "",
+        "telefono": "",
+        "rnc": "",
+    }
+    lineas = []
+    lineas.append(datos_empresa.get("nombre").center(42))
+    if datos_empresa.get("direccion"):
+        lineas.append(datos_empresa["direccion"].center(42))
+    if datos_empresa.get("telefono"):
+        lineas.append(f"Tel: {datos_empresa['telefono']}")
+    if datos_empresa.get("rnc"):
+        lineas.append(f"RNC: {datos_empresa['rnc']}")
+    lineas.append("-" * 42)
+    lineas.append(f"Factura #: {datos_venta.get('id', 'N/A')}")
+    lineas.append(f"Fecha: {datos_venta.get('fecha')}")
+    lineas.append(f"Cliente: {nombre_cliente_str}")
+    lineas.append("-" * 42)
+    lineas.append("Producto                Cant.       Total")
+    lineas.append("-" * 42)
+    for item in datos_venta.get('productos', []):
+        nombre = (item.get('nombre') or '')[:20].ljust(20)
+        cantidad = f"{float(item.get('cantidad', 0)):.2f}".rjust(8)
+        subtotal = f"{float(item.get('subtotal', 0.0)):.2f}".rjust(10)
+        lineas.append(f"{nombre}{cantidad}{subtotal}")
+    lineas.append("-" * 42)
+    lineas.append(f"Subtotal: RD$ {datos_venta.get('subtotal_bruto_con_itbis', 0.0):.2f}")
+    lineas.append(f"Descuento: RD$ {datos_venta.get('descuento_aplicado', 0.0):.2f}")
+    lineas.append(f"Total: RD$ {datos_venta.get('total_neto', 0.0):.2f}")
+    lineas.append(f"ITBIS: RD$ {datos_venta.get('itbis_total_venta', 0.0):.2f}")
+    lineas.append("-" * 42)
+    lineas.append("¡Gracias por su compra!".center(42))
+    return "\n".join(lineas)
+
+
 # --------------------- Usuarios ---------------------
 
 def autenticar_usuario(username: str, password: str) -> Dict:
@@ -411,3 +447,110 @@ def actualizar_password_usuario(user_id: int, password_actual: str, password_nue
     hashed_new = hash_password(password_nuevo.strip())
     execute("UPDATE usuarios SET password=%s WHERE id=%s", (hashed_new, user_id))
     return {"exito": True, "mensaje": "Contraseña actualizada correctamente."}
+
+# --------------------- Configuracion de la app ---------------------
+
+def obtener_configuracion_app() -> Optional[Dict]:
+    """
+    Retorna la configuracion persistida (tema + datos de empresa).
+    Si no hay fila devuelve None para que la GUI aplique sus defaults.
+    """
+    row = None
+    try:
+        row = fetch_one(
+            "SELECT tema, empresa_nombre, empresa_rnc, empresa_direccion, empresa_ciudad, "
+            "empresa_telefono, empresa_correo, empresa_tagline, logo_path, colores_json "
+            "FROM configuracion_app WHERE id=1"
+        )
+    except Exception:
+        row = fetch_one(
+            "SELECT tema, empresa_nombre, empresa_rnc, empresa_direccion, empresa_ciudad, "
+            "empresa_telefono, empresa_correo, empresa_tagline, logo_path "
+            "FROM configuracion_app WHERE id=1"
+        )
+        if row is not None:
+            row["colores_json"] = None
+    if not row:
+        return None
+    try:
+        colores = json.loads(row.get("colores_json") or "{}")
+    except (TypeError, json.JSONDecodeError):
+        colores = {}
+    return {
+        "tema": (row.get("tema") or "sistema").strip().lower(),
+        "empresa": {
+            "nombre": row.get("empresa_nombre") or "",
+            "rnc": row.get("empresa_rnc") or "",
+            "direccion": row.get("empresa_direccion") or "",
+            "ciudad": row.get("empresa_ciudad") or "",
+            "telefono": row.get("empresa_telefono") or "",
+            "correo": row.get("empresa_correo") or "",
+            "tagline": row.get("empresa_tagline") or "",
+            "logo_path": row.get("logo_path") or "",
+        },
+        "colores_botones": colores if isinstance(colores, dict) else {}
+    }
+
+def guardar_configuracion_app(config: Dict) -> Dict:
+    """
+    Guarda (upsert) la configuracion completa. Espera el mismo payload que maneja la GUI.
+    """
+    empresa = config.get("empresa") or {}
+    colores_json = json.dumps(config.get("colores_botones") or {}, ensure_ascii=False)
+    params = (
+        1,
+        str(config.get("tema") or "sistema").strip().lower(),
+        (empresa.get("nombre") or "").strip(),
+        (empresa.get("rnc") or "").strip(),
+        (empresa.get("direccion") or "").strip(),
+        (empresa.get("ciudad") or "").strip(),
+        (empresa.get("telefono") or "").strip(),
+        (empresa.get("correo") or "").strip(),
+        (empresa.get("tagline") or "").strip(),
+        (empresa.get("logo_path") or "").strip(),
+        colores_json,
+    )
+    sql = (
+        "INSERT INTO configuracion_app "
+        "(id, tema, empresa_nombre, empresa_rnc, empresa_direccion, empresa_ciudad, "
+        "empresa_telefono, empresa_correo, empresa_tagline, logo_path, colores_json) "
+        "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) "
+        "ON DUPLICATE KEY UPDATE "
+        "tema=VALUES(tema), "
+        "empresa_nombre=VALUES(empresa_nombre), "
+        "empresa_rnc=VALUES(empresa_rnc), "
+        "empresa_direccion=VALUES(empresa_direccion), "
+        "empresa_ciudad=VALUES(empresa_ciudad), "
+        "empresa_telefono=VALUES(empresa_telefono), "
+        "empresa_correo=VALUES(empresa_correo), "
+        "empresa_tagline=VALUES(empresa_tagline), "
+        "logo_path=VALUES(logo_path), "
+        "colores_json=VALUES(colores_json)"
+    )
+    try:
+        execute(sql, params)
+    except Exception as exc:
+        if "colores_json" not in str(exc).lower():
+            raise
+        # Compatibilidad con esquemas antiguos sin la columna colores_json
+        legacy_sql = (
+            "INSERT INTO configuracion_app "
+            "(id, tema, empresa_nombre, empresa_rnc, empresa_direccion, empresa_ciudad, "
+            "empresa_telefono, empresa_correo, empresa_tagline, logo_path) "
+            "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) "
+            "ON DUPLICATE KEY UPDATE "
+            "tema=VALUES(tema), "
+            "empresa_nombre=VALUES(empresa_nombre), "
+            "empresa_rnc=VALUES(empresa_rnc), "
+            "empresa_direccion=VALUES(empresa_direccion), "
+            "empresa_ciudad=VALUES(empresa_ciudad), "
+            "empresa_telefono=VALUES(empresa_telefono), "
+            "empresa_correo=VALUES(empresa_correo), "
+            "empresa_tagline=VALUES(empresa_tagline), "
+            "logo_path=VALUES(logo_path)"
+        )
+        legacy_params = params[:-1]
+        execute(legacy_sql, legacy_params)
+        print("Advertencia: la columna colores_json no está presente en configuracion_app. "
+              "Ejecute la migración para habilitar colores personalizados.")
+    return {"exito": True, "mensaje": "Configuracion actualizada."}

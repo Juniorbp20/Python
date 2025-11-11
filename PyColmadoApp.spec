@@ -5,7 +5,7 @@ a = Analysis(
     ['app_gui.py'],
     pathex=[],
     binaries=[],
-    datas=[('productos.json', '.'), ('clientes.json', '.'), ('ventas.json', '.')],
+    datas=[],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
