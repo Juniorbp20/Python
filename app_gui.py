@@ -401,42 +401,109 @@ class ColmadoApp:
         container = ttk.Frame(self.display_frame, style="Content.TFrame")
         container.pack(expand=True, fill=tk.BOTH)
 
-        ttk.Label(
-            container,
-            text=f"Bienvenido {self.current_user.get('username','')} ({self.current_user.get('rol','')}).",
-            style="Welcome.TLabel"
-        ).pack(anchor="w", pady=(0, 4))
-        clock_label = ttk.Label(container, text="", style="Subheader.TLabel")
-        clock_label.pack(anchor="w", pady=(0, 4))
-        self._start_dashboard_clock(clock_label)
-
-        ttk.Label(
-            container,
-            text="Resumen del sistema",
-            style="Subheader.TLabel"
-        ).pack(anchor="w", pady=(4, 12))
-
         stats = self._collect_dashboard_metrics()
-        self.dashboard_cards = []
-        cards_frame = ttk.Frame(container, style="Content.TFrame")
-        cards_frame.pack(fill=tk.X, pady=(0, 14))
+        hero_bg = self.colors.get("accent_light", "#e0f4f7")
+        hero_fg = self._get_contrasting_color(hero_bg)
+        hero_frame = tk.Frame(container, bg=hero_bg, bd=0, highlightthickness=0, padx=18, pady=18)
+        hero_frame.pack(fill=tk.X, pady=(0, 18))
+        hero_frame.columnconfigure(0, weight=1)
+        hero_frame.columnconfigure(1, weight=1)
 
-        for concepto, valor in stats:
-            text = f"{concepto}\n{valor}"
-            btn = ttk.Button(
-                cards_frame,
-                text=text,
-                style="Nav.TButton",
-                command=(lambda c=concepto: self._on_dashboard_metric_click(c) if c == "Ventas del dia" else None)
+        welcome_text = f"Bienvenido {self.current_user.get('username', '')} ({self.current_user.get('rol', '').title()})"
+        tk.Label(hero_frame, text=welcome_text, bg=hero_bg, fg=hero_fg, font=("Segoe UI", 18, "bold")).grid(row=0, column=0, sticky="w")
+        tk.Label(
+            hero_frame,
+            text="Gestiona inventario, ventas y relaciones con proveedores desde un solo panel.",
+            bg=hero_bg,
+            fg=hero_fg,
+            font=("Segoe UI", 11)
+        ).grid(row=1, column=0, sticky="w", pady=(6, 0))
+
+        hero_clock_label = tk.Label(hero_frame, text="", bg=hero_bg, fg=hero_fg, font=("Segoe UI", 10))
+        hero_clock_label.grid(row=0, column=1, sticky="e")
+        self._start_dashboard_clock(hero_clock_label)
+        tk.Label(
+            hero_frame,
+            text="Panel actualizado al instante",
+            bg=hero_bg,
+            fg=hero_fg,
+            font=("Segoe UI", 10)
+        ).grid(row=1, column=1, sticky="e")
+
+        hero_metrics = tk.Frame(hero_frame, bg=hero_bg)
+        hero_metrics.grid(row=2, column=0, columnspan=2, sticky="ew", pady=(16, 0))
+        for col_idx in range(3):
+            hero_metrics.columnconfigure(col_idx, weight=1)
+        for idx, (concepto, valor) in enumerate(stats[:3]):
+            highlight = tk.Frame(hero_metrics, bg=self.colors.get("panel_alt", "#ffffff"), bd=0, relief=tk.FLAT, padx=12, pady=10)
+            highlight.grid(row=0, column=idx, sticky="ew", padx=6)
+            tk.Label(
+                highlight,
+                text=concepto,
+                bg=self.colors.get("panel_alt", "#ffffff"),
+                fg=self.colors.get("muted", "#5c6c7d"),
+                font=("Segoe UI", 9)
+            ).pack(anchor="w")
+            tk.Label(
+                highlight,
+                text=valor,
+                bg=self.colors.get("panel_alt", "#ffffff"),
+                fg=self.colors.get("text", "#1f2933"),
+                font=("Segoe UI", 14, "bold")
+            ).pack(anchor="w")
+
+        summary_label = tk.Label(
+            hero_frame,
+            text="Haz clic en 'Ventas del dia' mas abajo para revisar el detalle de hoy.",
+            bg=hero_bg,
+            fg=hero_fg,
+            font=("Segoe UI", 9)
+        )
+        summary_label.grid(row=3, column=0, columnspan=2, sticky="w", pady=(12, 0))
+
+        cards_container = tk.Frame(container, bg=self.colors.get("panel", "#ffffff"))
+        cards_container.pack(fill=tk.BOTH, expand=True)
+        for col_idx in range(3):
+            cards_container.columnconfigure(col_idx, weight=1)
+        total_rows = (len(stats) + 2) // 3
+        for row_idx in range(total_rows):
+            cards_container.rowconfigure(row_idx, weight=1)
+
+        card_bg = self.colors.get("panel_alt", "#f8f8f8")
+        for idx, (concepto, valor) in enumerate(stats):
+            row = idx // 3
+            col = idx % 3
+            card_frame = tk.Frame(
+                cards_container,
+                bg=card_bg,
+                bd=1,
+                highlightthickness=0,
+                relief=tk.FLAT,
+                padx=12,
+                pady=14
             )
-            btn.pack(fill=tk.X, pady=4)
-            if concepto != "Ventas del dia":
-                btn.state(["disabled"])
-            self.dashboard_cards.append(btn)
+            card_frame.grid(row=row, column=col, sticky="nsew", padx=8, pady=8)
+            tk.Label(
+                card_frame,
+                text=concepto,
+                bg=card_bg,
+                fg=self.colors.get("muted", "#5c6c7d"),
+                font=("Segoe UI", 10, "bold")
+            ).pack(anchor="w")
+            tk.Label(
+                card_frame,
+                text=valor,
+                bg=card_bg,
+                fg=self.colors.get("text", "#1f2933"),
+                font=("Segoe UI", 14, "bold")
+            ).pack(anchor="w", pady=(8, 0))
+            if concepto == "Ventas del dia":
+                card_frame.config(cursor="hand2")
+                card_frame.bind("<Button-1>", lambda e, c=concepto: self._on_dashboard_metric_click(c))
 
         ttk.Label(
             container,
-            text="Seleccione una accion desde el panel izquierdo para continuar.",
+            text="Seleccione una acción desde el panel izquierdo para continuar.",
             style="Muted.TLabel"
         ).pack(anchor="w", pady=(8, 0))
 
@@ -450,6 +517,14 @@ class ColmadoApp:
                 btn.configure(style=desired_style)
             except Exception:
                 pass
+
+    def _safe_repo_call(self, func, mensaje_error, *args, **kwargs):
+        """Ejecuta llamadas a Modulos.Repo con manejo de errores amigable."""
+        try:
+            return func(*args, **kwargs)
+        except Exception as exc:
+            messagebox.showerror("Error de datos", f"{mensaje_error}\n{exc}", parent=self.display_frame)
+            return None
 
     def _create_actions_panel(self, parent_frame):
         container = ttk.Frame(parent_frame, style="Content.TFrame")
@@ -1871,26 +1946,117 @@ class ColmadoApp:
     def _on_producto_venta_keyup(self, event=None):
         texto_busqueda = self.producto_venta_seleccionado_var.get().lower()
         if not texto_busqueda:
-            self.lista_display_productos_venta_filtrada = self.lista_display_productos_venta_original[:]
-        else:
-            self.lista_display_productos_venta_filtrada = [
-                item_display for item_display in self.lista_display_productos_venta_original
-                if texto_busqueda in item_display.lower()
-            ]
-        current_text_in_box = self.producto_venta_combo.get()
+            self.lista_display_productos_venta_filtrada = []
+            self.producto_venta_combo['values'] = []
+            self._cerrar_popup_busqueda_productos()
+            return
+
+        self.lista_display_productos_venta_filtrada = [
+            item_display for item_display in self.lista_display_productos_venta_original
+            if texto_busqueda in item_display.lower()
+        ]
         self.producto_venta_combo['values'] = self.lista_display_productos_venta_filtrada
-        self.producto_venta_combo.delete(0, tk.END)
-        self.producto_venta_combo.insert(0, current_text_in_box)
-        self.producto_venta_combo.icursor(tk.END)
-        if self.lista_display_productos_venta_filtrada and self.root.focus_get() == self.producto_venta_combo:
-            try:
-                self.producto_venta_combo.event_generate("<Down>")
-                # Restaurar texto después de abrir el dropdown
-                self.producto_venta_combo.delete(0, tk.END)
-                self.producto_venta_combo.insert(0, current_text_in_box)
-                self.producto_venta_combo.icursor(tk.END)
-            except Exception:
-                pass
+        self._mostrar_popup_busqueda_productos(self.lista_display_productos_venta_filtrada)
+
+    def _mostrar_popup_busqueda_productos(self, sugerencias):
+        if not sugerencias:
+            self._cerrar_popup_busqueda_productos()
+            return
+
+        popup = getattr(self, "producto_popup", None)
+        if not popup or not popup.winfo_exists():
+            popup = ttk.Frame(self.display_frame, style="Content.TFrame", relief=tk.RIDGE, borderwidth=1)
+            listbox = tk.Listbox(
+                popup,
+                activestyle="none",
+                bg=self.colors.get("panel_alt", "#f8f8f8"),
+                fg=self.colors.get("text", "#1f2933"),
+                highlightthickness=0,
+                selectbackground=self.colors.get("accent", "#2F66FF"),
+                selectforeground="#ffffff",
+                borderwidth=0
+            )
+            scrollbar = ttk.Scrollbar(popup, orient=tk.VERTICAL, command=listbox.yview)
+            listbox.config(yscrollcommand=scrollbar.set)
+            listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, pady=2)
+            scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+            listbox.bind("<ButtonRelease-1>", lambda e: self._seleccionar_producto_popup(listbox))
+            listbox.bind("<Return>", lambda e: self._seleccionar_producto_popup(listbox))
+            listbox.bind("<Escape>", lambda e: self._cerrar_popup_busqueda_productos())
+            listbox.bind("<Up>", lambda e: self._navegar_popup(e, listbox))
+            listbox.bind("<Down>", lambda e: self._navegar_popup(e, listbox))
+            listbox.bind("<FocusOut>", lambda e: self._cerrar_popup_busqueda_productos())
+            popup.listbox = listbox
+            self.producto_popup = popup
+        else:
+            listbox = popup.listbox
+
+        listbox.delete(0, tk.END)
+        for item in sugerencias:
+            listbox.insert(tk.END, item)
+        listbox.selection_clear(0, tk.END)
+        listbox.selection_set(0)
+        listbox.config(height=min(len(sugerencias), 8))
+
+        entry = self.producto_venta_combo
+        entry_x = entry.winfo_rootx()
+        entry_y = entry.winfo_rooty()
+        parent_x = self.display_frame.winfo_rootx()
+        parent_y = self.display_frame.winfo_rooty()
+        x = entry_x - parent_x
+        y = entry_y - parent_y + entry.winfo_height()
+        width = max(entry.winfo_width(), 240)
+        rows = min(len(sugerencias), 8)
+        height = rows * 24 + 12
+        popup.place(x=x, y=y, width=width, height=height)
+
+    def _cerrar_popup_busqueda_productos(self):
+        popup = getattr(self, "producto_popup", None)
+        if popup and popup.winfo_exists():
+            popup.place_forget()
+
+    def _seleccionar_producto_popup(self, listbox):
+        seleccion = listbox.curselection()
+        if not seleccion:
+            return
+        texto = listbox.get(seleccion[0])
+        self.producto_venta_seleccionado_var.set(texto)
+        self._cerrar_popup_busqueda_productos()
+        self.producto_venta_combo.focus_set()
+        self._actualizar_info_producto_seleccionado_venta()
+
+    def _navegar_popup(self, event, listbox):
+        size = listbox.size()
+        if size == 0:
+            return "break"
+        current = listbox.curselection()
+        if not current:
+            target = 0 if event.keysym == "Down" else size - 1
+        else:
+            idx = current[0]
+            if event.keysym == "Down":
+                target = min(size - 1, idx + 1)
+            else:
+                target = max(0, idx - 1)
+        listbox.selection_clear(0, tk.END)
+        listbox.selection_set(target)
+        listbox.activate(target)
+        return "break"
+
+    def _activar_navegacion_popup(self, event):
+        popup = getattr(self, "producto_popup", None)
+        if not popup or not popup.winfo_exists():
+            return
+        listbox = getattr(popup, "listbox", None)
+        if not listbox or listbox.size() == 0:
+            return
+        listbox.focus_set()
+        index = listbox.curselection()[0] if listbox.curselection() else 0
+        listbox.selection_clear(0, tk.END)
+        listbox.selection_set(index)
+        listbox.activate(index)
+        return "break"
 
     def _agregar_item_a_venta_actual_event(self, event=None):
         self._agregar_item_a_venta_actual()
@@ -1901,11 +2067,16 @@ class ColmadoApp:
         return "break"
 
     def _cargar_datos_para_nueva_venta(self):
-        clientes_data = obtener_lista_clientes_para_combobox()
+        clientes_data = self._safe_repo_call(obtener_lista_clientes_para_combobox, "No se pudieron cargar los clientes.")
+        if not clientes_data:
+            clientes_data = []
         self.clientes_venta_map = {cliente["nombre"]: cliente["id"] for cliente in clientes_data}
         self.lista_display_clientes_venta = ["Ninguno"] + sorted(list(self.clientes_venta_map.keys()))
 
-        self.productos_para_venta_datos = obtener_productos_para_venta_gui() 
+        productos_data = self._safe_repo_call(obtener_productos_para_venta_gui, "No se pudieron cargar los productos.")
+        if not productos_data:
+            productos_data = []
+        self.productos_para_venta_datos = productos_data
         self.lista_display_productos_venta_original = []
         for p in self.productos_para_venta_datos:
             precio_a_mostrar = p.get('precio_final_venta', p.get('precio', 0.0))
@@ -2193,6 +2364,8 @@ class ColmadoApp:
         self.producto_venta_combo.bind("<<ComboboxSelected>>", self._actualizar_info_producto_seleccionado_venta)
         self.producto_venta_combo.bind("<KeyRelease>", self._on_producto_venta_keyup)
         self.producto_venta_combo.bind("<Return>", self._agregar_item_a_venta_actual_event)
+        self.producto_venta_combo.bind("<Down>", self._activar_navegacion_popup)
+        self.producto_venta_combo.bind("<Escape>", lambda e: self._cerrar_popup_busqueda_productos())
         prod_info_qty_frame = ttk.Frame(venta_main_frame)
         prod_info_qty_frame.pack(fill=tk.X, pady=(0, 5))
         self.stock_disponible_venta_label = ttk.Label(prod_info_qty_frame, text="Stock Disp: -", width=18)
@@ -2887,5 +3060,3 @@ if __name__ == "__main__":
             login_root.destroy()
         except Exception:
             pass
-
-
