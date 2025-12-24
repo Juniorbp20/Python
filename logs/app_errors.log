@@ -1,0 +1,82 @@
+2025-12-23 16:00:18,920 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\tkinter\__init__.py", line 2074, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Gustavo J. Bonifacio\Documents\punto de venta\Python\app_gui.py", line 1812, in _submit_nuevo_producto
+    self.producto_venta_combo['values'] = self.lista_display_productos_venta_filtrada
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\tkinter\__init__.py", line 1839, in __setitem__
+    self.configure({key: value})
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\tkinter\__init__.py", line 1828, in configure
+    return self._configure('configure', cnf, kw)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\tkinter\__init__.py", line 1812, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: invalid command name ".!frame.!frame2.!frame2.!frame36.!frame.!combobox2"
+2025-12-23 16:00:45,538 | ERROR | pycolmado | Error de seleccion o valor al agregar item: 'AA'
+Traceback (most recent call last):
+  File "c:\Users\Gustavo J. Bonifacio\Documents\punto de venta\Python\app_gui.py", line 2169, in _agregar_item_a_venta_actual
+    producto_id = int(producto_seleccionado_str.split(" - ")[0])
+ValueError: invalid literal for int() with base 10: 'AA'
+2025-12-24 12:24:33,501 | ERROR | pycolmado | Unhandled exception
+Traceback (most recent call last):
+  File "c:\Users\Gustavo J. Bonifacio\Documents\punto de venta\Python\app_gui.py", line 3130, in <module>
+    app_root.mainloop()
+    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\tkinter\__init__.py", line 1599, in mainloop
+    self.tk.mainloop(n)
+    ~~~~~~~~~~~~~~~~^^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\tkinter\__init__.py", line 2069, in __call__
+    def __call__(self, *args):
+    
+KeyboardInterrupt
+2025-12-24 14:24:04,248 | ERROR | pycolmado | Unhandled exception
+Traceback (most recent call last):
+  File "c:\Users\Gustavo J. Bonifacio\Documents\punto de venta\Python\app_gui.py", line 3484, in <module>
+    app_root.title(f"Sistema JB solution - Usuario: {user.get('username','')} ({user.get('rol','')})")
+    ^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\tkinter\__init__.py", line 1599, in mainloop
+    self.tk.mainloop(n)
+    ~~~~~~~~~~~~~~~~^^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\tkinter\__init__.py", line 2069, in __call__
+    def __call__(self, *args):
+    
+KeyboardInterrupt
+2025-12-24 14:51:44,722 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\tkinter\__init__.py", line 2074, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Gustavo J. Bonifacio\Documents\punto de venta\Python\app_gui.py", line 2140, in registrar_proveedor_action
+    self._enable_treeview_sorting(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.tree_proveedores_registrados,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        money_cols=set(),
+        ^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "c:\Users\Gustavo J. Bonifacio\Documents\punto de venta\Python\app_gui.py", line 1592, in _enable_treeview_sorting
+    tree.heading(col, command=lambda c=col, m=is_money, n=is_numeric: self._on_treeview_heading_click(tree, c, n, m))
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\tkinter\ttk.py", line 1284, in heading
+    return _val_or_dict(self.tk, kw, self._w, 'heading', column)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\tkinter\ttk.py", line 288, in _val_or_dict
+    res = tk.call(*(args + options))
+_tkinter.TclError: Invalid column index estado_p
+2025-12-24 15:11:32,032 | ERROR | pycolmado | Unhandled exception
+Traceback (most recent call last):
+  File "c:\Users\Gustavo J. Bonifacio\Documents\punto de venta\Python\app_gui.py", line 3320, in <module>
+    app_root.mainloop()
+    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\tkinter\__init__.py", line 1599, in mainloop
+    self.tk.mainloop(n)
+    ~~~~~~~~~~~~~~~~^^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.2544.0_x64__qbz5n2kfra8p0\Lib\tkinter\__init__.py", line 2069, in __call__
+    def __call__(self, *args):
+    
+KeyboardInterrupt

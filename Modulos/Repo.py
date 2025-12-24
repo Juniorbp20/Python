@@ -119,30 +119,77 @@ def actualizar_producto(producto_id: int, datos: Dict) -> Dict:
     return {"exito": True, "mensaje": "Producto actualizado."}
 
 
+def eliminar_producto_por_id(producto_id: int) -> Dict:
+    producto = fetch_one("SELECT id, nombre FROM productos WHERE id=%s", (producto_id,))
+    if not producto:
+        return {"exito": False, "mensaje": "Producto no encontrado."}
+    ref = fetch_one("SELECT COUNT(*) AS total FROM ventas_detalle WHERE producto_id=%s", (producto_id,))
+    if ref and int(ref.get("total", 0)) > 0:
+        return {
+            "exito": False,
+            "mensaje": "No se puede eliminar: el producto tiene ventas registradas."
+        }
+    execute("DELETE FROM productos WHERE id=%s", (producto_id,))
+    return {"exito": True, "mensaje": f"Producto eliminado: {producto.get('nombre', '')}".strip()}
+
+
 # --------------------- Clientes ---------------------
 
 def obtener_lista_clientes_para_combobox() -> List[Dict]:
-    rows = fetch_all("SELECT id, nombre FROM clientes ORDER BY nombre")
+    rows = fetch_all("SELECT id, nombre FROM clientes WHERE activo=1 ORDER BY nombre")
     return [{'id': r['id'], 'nombre': r['nombre']} for r in rows]
 
 
-def obtener_clientes_para_tabla_gui() -> List[Dict]:
-    """Devuelve clientes con datos básicos para mostrarlos en tablas de la GUI."""
-    return fetch_all("SELECT id, nombre, telefono, direccion FROM clientes ORDER BY nombre")
+def obtener_clientes_para_tabla_gui(include_inactivos: bool = False) -> List[Dict]:
+    """Devuelve clientes con datos basicos para mostrarlos en tablas de la GUI."""
+    if include_inactivos:
+        return fetch_all("SELECT id, nombre, telefono, direccion, activo FROM clientes ORDER BY nombre")
+    return fetch_all("SELECT id, nombre, telefono, direccion, activo FROM clientes WHERE activo=1 ORDER BY nombre")
 
 
 def guardar_nuevo_cliente_desde_gui(nombre: str, telefono: str, direccion: str) -> Dict:
     if not (nombre.strip() and telefono.strip()):
-        return {"exito": False, "mensaje": "El nombre y el teléfono son obligatorios."}
-    dup = fetch_one("SELECT id FROM clientes WHERE LOWER(nombre)=LOWER(%s) AND telefono=%s", (nombre.strip(), telefono.strip()))
+        return {"exito": False, "mensaje": "El nombre y el telefono son obligatorios."}
+    dup = fetch_one("SELECT id, activo FROM clientes WHERE LOWER(nombre)=LOWER(%s) AND telefono=%s", (nombre.strip(), telefono.strip()))
     if dup:
-        return {"exito": False, "mensaje": f"El cliente '{nombre.strip()}' con teléfono '{telefono.strip()}' ya existe."}
+        if int(dup.get("activo", 1)) == 0:
+            execute(
+                "UPDATE clientes SET nombre=%s, telefono=%s, direccion=%s, activo=1 WHERE id=%s",
+                (nombre.strip(), telefono.strip(), direccion.strip(), dup.get("id"))
+            )
+            return {"exito": True, "mensaje": f"Cliente '{nombre.strip()}' reactivado exitosamente."}
+        return {"exito": False, "mensaje": f"El cliente '{nombre.strip()}' con telefono '{telefono.strip()}' ya existe."}
     new_id = execute(
-        "INSERT INTO clientes (nombre, telefono, direccion) VALUES (%s,%s,%s)",
+        "INSERT INTO clientes (nombre, telefono, direccion, activo) VALUES (%s,%s,%s,1)",
         (nombre.strip(), telefono.strip(), direccion.strip())
     )
     return {"exito": True, "mensaje": f"Cliente '{nombre.strip()}' (ID: {new_id}) registrado exitosamente."}
 
+
+def actualizar_cliente(cliente_id: int, nombre: str, telefono: str, direccion: str) -> Dict:
+    execute(
+        "UPDATE clientes SET nombre=%s, telefono=%s, direccion=%s WHERE id=%s",
+        (nombre.strip(), telefono.strip(), direccion.strip(), cliente_id)
+    )
+    return {"exito": True, "mensaje": "Cliente actualizado."}
+
+
+def desactivar_cliente(cliente_id: int) -> Dict:
+    existe = fetch_one("SELECT id FROM clientes WHERE id=%s", (cliente_id,))
+    if not existe:
+        return {"exito": False, "mensaje": "Cliente no encontrado."}
+    execute("UPDATE clientes SET activo=0 WHERE id=%s", (cliente_id,))
+    return {"exito": True, "mensaje": "Cliente desactivado."}
+
+
+
+
+def activar_cliente(cliente_id: int) -> Dict:
+    existe = fetch_one("SELECT id FROM clientes WHERE id=%s", (cliente_id,))
+    if not existe:
+        return {"exito": False, "mensaje": "Cliente no encontrado."}
+    execute("UPDATE clientes SET activo=1 WHERE id=%s", (cliente_id,))
+    return {"exito": True, "mensaje": "Cliente activado."}
 
 def obtener_historial_compras_cliente_gui(cliente_id: int) -> Dict:
     c = fetch_one("SELECT id, nombre, telefono, direccion FROM clientes WHERE id=%s", (cliente_id,))
@@ -174,16 +221,16 @@ def obtener_lista_proveedores_para_combobox() -> List[Dict]:
 
 
 def obtener_proveedores_para_tabla_gui() -> List[Dict]:
-    """Devuelve proveedores con datos básicos para mostrarlos en tablas de la GUI."""
+    """Devuelve proveedores con datos basicos para mostrarlos en tablas de la GUI."""
     return fetch_all("SELECT id, nombre, telefono, direccion FROM proveedores ORDER BY nombre")
 
 
 def guardar_nuevo_proveedor_desde_gui(nombre: str, telefono: str, direccion: str) -> Dict:
     if not (nombre.strip() and telefono.strip()):
-        return {"exito": False, "mensaje": "El nombre y el teléfono son obligatorios."}
+        return {"exito": False, "mensaje": "El nombre y el telefono son obligatorios."}
     dup = fetch_one("SELECT id FROM proveedores WHERE LOWER(nombre)=LOWER(%s) AND telefono=%s", (nombre.strip(), telefono.strip()))
     if dup:
-        return {"exito": False, "mensaje": f"El proveedor '{nombre.strip()}' con teléfono '{telefono.strip()}' ya existe."}
+        return {"exito": False, "mensaje": f"El proveedor '{nombre.strip()}' con telefono '{telefono.strip()}' ya existe."}
     new_id = execute(
         "INSERT INTO proveedores (nombre, telefono, direccion) VALUES (%s,%s,%s)",
         (nombre.strip(), telefono.strip(), direccion.strip())
@@ -206,8 +253,11 @@ def actualizar_proveedor(proveedor_id: int, nombre: str, telefono: str, direccio
     execute("UPDATE proveedores SET nombre=%s, telefono=%s, direccion=%s WHERE id=%s", (nombre.strip(), telefono.strip(), direccion.strip(), proveedor_id))
     return {"exito": True, "mensaje": "Proveedor actualizado."}
 
-
 # --------------------- Ventas ---------------------
+
+
+
+
 
 def procesar_nueva_venta_gui(
     cliente_id_seleccionado: Optional[int],
