@@ -69,6 +69,10 @@ def _get_db_params():
         'charset': 'utf8mb4',
         'cursorclass': DictCursor,
         'autocommit': False,
+        # Timeouts para evitar congelamientos largos de la UI cuando la DB responde lento.
+        'connect_timeout': int(os.environ.get('DB_CONNECT_TIMEOUT', '5')),
+        'read_timeout': int(os.environ.get('DB_READ_TIMEOUT', '10')),
+        'write_timeout': int(os.environ.get('DB_WRITE_TIMEOUT', '10')),
     }
 
 

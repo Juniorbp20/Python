@@ -80,3 +80,1212 @@ Traceback (most recent call last):
     def __call__(self, *args):
     
 KeyboardInterrupt
+2026-02-21 15:27:51,433 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:27:54,410 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:27:54,913 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:27:55,220 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:27:55,446 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:27:57,350 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:27:57,988 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:27:58,175 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:27:58,355 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:27:58,528 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:27:58,686 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:27:58,835 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:27:58,994 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:27:59,158 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:27:59,323 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:27:59,510 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:27:59,691 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:27:59,848 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:27:59,998 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:28:00,155 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:00,899 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:02,932 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:03,291 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:03,503 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:03,697 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:03,847 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:04,154 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:05,736 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:05,917 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:06,097 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:06,232 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:06,404 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:07,229 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:08,227 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:08,602 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:08,894 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:09,247 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:09,503 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:09,704 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:09,892 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:10,064 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:10,221 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:10,394 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:10,874 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:11,077 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:11,212 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:11,414 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:11,654 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:12,059 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:13,094 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:13,462 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:28,807 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:40:29,940 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 15:42:10,635 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 236, in _on_login
+    res = autenticar_usuario(username, password)
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\Repo.py", line 425, in autenticar_usuario
+    u = fetch_one("SELECT * FROM usuarios WHERE username=%s", (username,))
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 125, in fetch_one
+    with get_connection() as conn:
+         ~~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 84, in get_connection
+    _check_driver()
+    ~~~~~~~~~~~~~^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\Modulos\DBUtil.py", line 77, in _check_driver
+    raise RuntimeError(
+        "PyMySQL no está instalado. Instala con: pip install pymysql"
+    )
+RuntimeError: PyMySQL no está instalado. Instala con: pip install pymysql
+2026-02-21 16:15:18,646 | WARNING | pycolmado | Pillow no esta disponible; el logo se mostrara sin recorte circular.
+2026-02-21 16:15:46,421 | WARNING | pycolmado | Pillow no esta disponible; el logo se mostrara sin recorte circular.
+2026-02-21 16:17:45,192 | WARNING | pycolmado | Pillow no esta disponible; el logo se mostrara sin recorte circular.
+2026-02-21 17:04:25,098 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 2051, in _submit_nuevo_producto
+    self.producto_venta_combo['values'] = self.lista_display_productos_venta_filtrada
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 1853, in __setitem__
+    self.configure({key: value})
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 1842, in configure
+    return self._configure('configure', cnf, kw)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 1826, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: invalid command name ".!frame.!frame2.!frame2.!frame3.!frame.!combobox2"
+2026-02-21 17:04:46,246 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 2259, in _on_producto_venta_keyup
+    self._mostrar_popup_busqueda_productos(self.lista_display_productos_venta_filtrada)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 2285, in _mostrar_popup_busqueda_productos
+    acciones_proveedores = ttk.Frame(tabla_frame)
+                                     ^^^^^^^^^^^
+NameError: name 'tabla_frame' is not defined
+2026-02-21 17:04:46,670 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 2259, in _on_producto_venta_keyup
+    self._mostrar_popup_busqueda_productos(self.lista_display_productos_venta_filtrada)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 2285, in _mostrar_popup_busqueda_productos
+    acciones_proveedores = ttk.Frame(tabla_frame)
+                                     ^^^^^^^^^^^
+NameError: name 'tabla_frame' is not defined
+2026-02-21 17:04:46,957 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 2259, in _on_producto_venta_keyup
+    self._mostrar_popup_busqueda_productos(self.lista_display_productos_venta_filtrada)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 2285, in _mostrar_popup_busqueda_productos
+    acciones_proveedores = ttk.Frame(tabla_frame)
+                                     ^^^^^^^^^^^
+NameError: name 'tabla_frame' is not defined
+2026-02-21 17:06:04,493 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 2259, in _on_producto_venta_keyup
+    self._mostrar_popup_busqueda_productos(self.lista_display_productos_venta_filtrada)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 2285, in _mostrar_popup_busqueda_productos
+    acciones_proveedores = ttk.Frame(tabla_frame)
+                                     ^^^^^^^^^^^
+NameError: name 'tabla_frame' is not defined
+2026-02-21 17:06:04,653 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 2259, in _on_producto_venta_keyup
+    self._mostrar_popup_busqueda_productos(self.lista_display_productos_venta_filtrada)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 2285, in _mostrar_popup_busqueda_productos
+    acciones_proveedores = ttk.Frame(tabla_frame)
+                                     ^^^^^^^^^^^
+NameError: name 'tabla_frame' is not defined
+2026-02-21 17:06:04,949 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 2259, in _on_producto_venta_keyup
+    self._mostrar_popup_busqueda_productos(self.lista_display_productos_venta_filtrada)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 2285, in _mostrar_popup_busqueda_productos
+    acciones_proveedores = ttk.Frame(tabla_frame)
+                                     ^^^^^^^^^^^
+NameError: name 'tabla_frame' is not defined
+2026-02-21 17:07:05,169 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 2051, in _submit_nuevo_producto
+    self.producto_venta_combo['values'] = self.lista_display_productos_venta_filtrada
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 1853, in __setitem__
+    self.configure({key: value})
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 1842, in configure
+    return self._configure('configure', cnf, kw)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 1826, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: invalid command name ".!frame.!frame2.!frame2.!frame18.!frame.!combobox2"
+2026-02-21 17:09:30,586 | ERROR | pycolmado | Tk callback exception
+Traceback (most recent call last):
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2088, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "c:\Users\Bonifacio\OneDrive - Universidad Autonoma de Santo Domingo\Documentos\Programacion Experimental\Py\app_gui.py", line 2051, in _submit_nuevo_producto
+    self.producto_venta_combo['values'] = self.lista_display_productos_venta_filtrada
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 1853, in __setitem__
+    self.configure({key: value})
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 1842, in configure
+    return self._configure('configure', cnf, kw)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bonifacio\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 1826, in _configure
+    self.tk.call(_flatten((self._w, cmd)) + self._options(cnf))
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: invalid command name ".!frame.!frame2.!frame2.!frame35.!frame.!combobox2"

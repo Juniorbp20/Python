@@ -347,7 +347,11 @@ def obtener_venta_para_factura(venta_id: int) -> Dict:
         return _venta_para_factura(conn, venta_id)
 
 
-def obtener_ventas_para_historial_gui(fecha_inicio_str: Optional[str] = None, fecha_fin_str: Optional[str] = None) -> Dict:
+def obtener_ventas_para_historial_gui(
+    fecha_inicio_str: Optional[str] = None,
+    fecha_fin_str: Optional[str] = None,
+    incluir_detalle: bool = True,
+) -> Dict:
     params = []
     where = []
     if fecha_inicio_str and fecha_fin_str:
@@ -361,15 +365,35 @@ def obtener_ventas_para_historial_gui(fecha_inicio_str: Optional[str] = None, fe
     ventas = fetch_all(sql, params)
     total_periodo = 0.0
     out = []
-    for v in ventas:
-        det = fetch_all("SELECT nombre_producto AS nombre, cantidad, precio_unitario, subtotal FROM ventas_detalle WHERE venta_id=%s", (v['id'],))
-        out.append({
-            'id_venta': v['id'], 'fecha': v['fecha'].strftime('%Y-%m-%d %H:%M:%S'), 'nombre_cliente': v['nombre_cliente'],
-            'productos_detalle': [
+
+    detalles_por_venta = {}
+    if incluir_detalle and ventas:
+        ids_venta = [v['id'] for v in ventas]
+        placeholders = ",".join(["%s"] * len(ids_venta))
+        det_rows = fetch_all(
+            f"SELECT venta_id, nombre_producto AS nombre, cantidad, precio_unitario, subtotal "
+            f"FROM ventas_detalle WHERE venta_id IN ({placeholders}) ORDER BY venta_id",
+            ids_venta,
+        )
+        for d in det_rows:
+            venta_id = d['venta_id']
+            if venta_id not in detalles_por_venta:
+                detalles_por_venta[venta_id] = []
+            detalles_por_venta[venta_id].append(
                 {
-                    'nombre': d['nombre'], 'cantidad': float(d['cantidad']), 'precio_unitario': float(d['precio_unitario']), 'subtotal': float(d['subtotal'])
-                } for d in det
-            ],
+                    'nombre': d['nombre'],
+                    'cantidad': float(d['cantidad']),
+                    'precio_unitario': float(d['precio_unitario']),
+                    'subtotal': float(d['subtotal']),
+                }
+            )
+
+    for v in ventas:
+        out.append({
+            'id_venta': v['id'],
+            'fecha': v['fecha'].strftime('%Y-%m-%d %H:%M:%S'),
+            'nombre_cliente': v['nombre_cliente'],
+            'productos_detalle': detalles_por_venta.get(v['id'], []),
             'subtotal_bruto_sin_itbis': float(v['subtotal_bruto_sin_itbis']),
             'itbis_total_venta': float(v['itbis_total_venta']),
             'subtotal_bruto_con_itbis': float(v['subtotal_bruto_con_itbis']),
@@ -523,9 +547,25 @@ def obtener_configuracion_app() -> Optional[Dict]:
     if not row:
         return None
     try:
-        colores = json.loads(row.get("colores_json") or "{}")
+        raw_extra = json.loads(row.get("colores_json") or "{}")
     except (TypeError, json.JSONDecodeError):
-        colores = {}
+        raw_extra = {}
+
+    colores = {}
+    margen_ganancia = 0.30
+    if isinstance(raw_extra, dict):
+        # Nuevo formato: {"colores_botones": {...}, "margen_ganancia": 0.30}
+        if "colores_botones" in raw_extra:
+            maybe_colors = raw_extra.get("colores_botones")
+            if isinstance(maybe_colors, dict):
+                colores = maybe_colors
+            try:
+                margen_ganancia = float(raw_extra.get("margen_ganancia", margen_ganancia))
+            except (TypeError, ValueError):
+                margen_ganancia = 0.30
+        else:
+            # Formato legacy: colores_json era el dict de colores directamente
+            colores = raw_extra
     return {
         "tema": (row.get("tema") or "sistema").strip().lower(),
         "empresa": {
@@ -538,7 +578,8 @@ def obtener_configuracion_app() -> Optional[Dict]:
             "tagline": row.get("empresa_tagline") or "",
             "logo_path": row.get("logo_path") or "",
         },
-        "colores_botones": colores if isinstance(colores, dict) else {}
+        "colores_botones": colores if isinstance(colores, dict) else {},
+        "margen_ganancia": margen_ganancia,
     }
 
 def guardar_configuracion_app(config: Dict) -> Dict:
@@ -546,7 +587,11 @@ def guardar_configuracion_app(config: Dict) -> Dict:
     Guarda (upsert) la configuracion completa. Espera el mismo payload que maneja la GUI.
     """
     empresa = config.get("empresa") or {}
-    colores_json = json.dumps(config.get("colores_botones") or {}, ensure_ascii=False)
+    extra_payload = {
+        "colores_botones": config.get("colores_botones") or {},
+        "margen_ganancia": float(config.get("margen_ganancia", 0.30)),
+    }
+    colores_json = json.dumps(extra_payload, ensure_ascii=False)
     params = (
         1,
         str(config.get("tema") or "sistema").strip().lower(),

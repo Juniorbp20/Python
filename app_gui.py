@@ -1,4 +1,6 @@
-﻿import os 
+﻿from __future__ import annotations
+
+import os
 import platform
 import tempfile
 import shutil
@@ -10,12 +12,14 @@ import tkinter as tk
 from tkinter import ttk, messagebox, filedialog, scrolledtext, colorchooser 
 import datetime
 import json
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from pathlib import Path
 try:
-    from PIL import Image, ImageTk
+    from PIL import Image, ImageTk, ImageDraw
 except ImportError:
     Image = None
     ImageTk = None
+    ImageDraw = None
 from Modulos.Repo import (
     # Productos
     obtener_productos_para_gui, guardar_nuevo_producto,
@@ -44,6 +48,7 @@ BASE_DIR = Path(__file__).resolve().parent
 CONFIG_FILE_PATH = BASE_DIR / "configuracion_app.json"
 DEFAULT_APP_CONFIG = {
     "tema": "sistema",
+    "margen_ganancia": 0.30,
     "empresa": {
         "nombre": "PyColmado",
         "rnc": "101-00000-1",
@@ -94,10 +99,26 @@ def _load_logo_image(path: str, max_size: int = 200):
         full_path = Path(path).expanduser()
         if not full_path.exists():
             return None
-        if Image and ImageTk:
-            img = Image.open(full_path)
+        if Image and ImageTk and ImageDraw:
+            img = Image.open(full_path).convert("RGBA")
             img.thumbnail((max_size, max_size), Image.LANCZOS)
-            return ImageTk.PhotoImage(img)
+
+            # Centrar imagen proporcional en un lienzo cuadrado transparente.
+            square = Image.new("RGBA", (max_size, max_size), (0, 0, 0, 0))
+            offset_x = (max_size - img.width) // 2
+            offset_y = (max_size - img.height) // 2
+            square.paste(img, (offset_x, offset_y))
+
+            # Aplicar mascara circular para recortar esquinas.
+            mask = Image.new("L", (max_size, max_size), 0)
+            draw = ImageDraw.Draw(mask)
+            draw.ellipse((0, 0, max_size - 1, max_size - 1), fill=255)
+            square.putalpha(mask)
+            return ImageTk.PhotoImage(square)
+
+        if not LOGGER.handlers:
+            _setup_logging()
+        LOGGER.warning("Pillow no esta disponible; el logo se mostrara sin recorte circular.")
         tk_img = tk.PhotoImage(file=str(full_path))
         width, height = tk_img.width(), tk_img.height()
         largest = max(width, height)
@@ -257,14 +278,14 @@ class LoginDialog(tk.Toplevel):
             pass
 
 
-MARGEN_GANANCIA_POR_DEFECTO = 0.30 # 30% de margen sobre el precio de compra
-
 class ColmadoApp:
     def __init__(self, root_window, current_user: dict | None = None):
         self.root = root_window
         self.app_config = self._load_app_config()
         if "colores_botones" not in self.app_config or not isinstance(self.app_config["colores_botones"], dict):
             self.app_config["colores_botones"] = {}
+        if "margen_ganancia" not in self.app_config:
+            self.app_config["margen_ganancia"] = DEFAULT_APP_CONFIG["margen_ganancia"]
         self._update_window_title()
         self.root.geometry("1000x750")
         self.available_theme_options = get_available_themes()
@@ -633,6 +654,10 @@ class ColmadoApp:
                 colores = stored.get("colores_botones") or {}
                 if isinstance(colores, dict):
                     data["colores_botones"] = colores.copy()
+                try:
+                    data["margen_ganancia"] = float(stored.get("margen_ganancia", data["margen_ganancia"]))
+                except (TypeError, ValueError):
+                    data["margen_ganancia"] = DEFAULT_APP_CONFIG["margen_ganancia"]
         except Exception:
             _log_warning("Advertencia: no se pudo leer configuracion desde la base de datos")
 
@@ -649,6 +674,10 @@ class ColmadoApp:
                         colores = stored.get("colores_botones") or {}
                         if isinstance(colores, dict):
                             data["colores_botones"] = colores.copy()
+                        try:
+                            data["margen_ganancia"] = float(stored.get("margen_ganancia", data["margen_ganancia"]))
+                        except (TypeError, ValueError):
+                            data["margen_ganancia"] = DEFAULT_APP_CONFIG["margen_ganancia"]
             except Exception:
                 _log_warning("Advertencia: no se pudo cargar configuracion legacy desde JSON")
             # Intentar sembrar la configuracion en la base de datos para futuras lecturas
@@ -658,6 +687,13 @@ class ColmadoApp:
                 _log_warning("Advertencia: no se pudo guardar configuracion inicial en DB")
 
         return data
+
+    def _get_margen_ganancia(self) -> float:
+        try:
+            value = float(self.app_config.get("margen_ganancia", DEFAULT_APP_CONFIG["margen_ganancia"]))
+        except (TypeError, ValueError):
+            value = DEFAULT_APP_CONFIG["margen_ganancia"]
+        return max(0.0, value)
 
     def _save_app_config(self):
         try:
@@ -736,6 +772,24 @@ class ColmadoApp:
         self._save_app_config()
         self._update_window_title()
         messagebox.showinfo("Datos guardados", "La información del negocio se actualizó correctamente.", parent=self.display_frame)
+
+    def _guardar_parametros_venta(self):
+        if self._role != "admin":
+            return
+        if not hasattr(self, "margen_ganancia_var"):
+            return
+        raw = self.margen_ganancia_var.get().strip().replace(",", ".")
+        try:
+            porcentaje = float(raw)
+        except ValueError:
+            messagebox.showerror("Valor inválido", "El margen debe ser un número válido.", parent=self.display_frame)
+            return
+        if porcentaje < 0 or porcentaje > 500:
+            messagebox.showerror("Rango inválido", "El margen debe estar entre 0% y 500%.", parent=self.display_frame)
+            return
+        self.app_config["margen_ganancia"] = round(porcentaje / 100.0, 4)
+        self._save_app_config()
+        messagebox.showinfo("Parámetros guardados", "El margen de ganancia predeterminado fue actualizado.", parent=self.display_frame)
 
     def _seleccionar_logo_empresa(self):
         if self._role != 'admin':
@@ -852,7 +906,7 @@ class ColmadoApp:
 
         def ventas_supplier():
             today = datetime.date.today().strftime("%Y-%m-%d")
-            info = obtener_ventas_para_historial_gui(today, today) or {}
+            info = obtener_ventas_para_historial_gui(today, today, incluir_detalle=False) or {}
             ventas = info.get("ventas_mostradas", [])
             total = float(info.get("total_periodo", 0.0))
             return len(ventas), total
@@ -885,7 +939,7 @@ class ColmadoApp:
         if label != "Ventas del dia":
             return
         today = datetime.date.today().strftime("%Y-%m-%d")
-        data = obtener_ventas_para_historial_gui(today, today) or {}
+        data = obtener_ventas_para_historial_gui(today, today, incluir_detalle=False) or {}
         ventas = data.get("ventas_mostradas", [])
         total = float(data.get("total_periodo", 0.0))
         self._mostrar_modal_ventas_dia(ventas, total, today)
@@ -970,7 +1024,7 @@ class ColmadoApp:
             except ValueError:
                 messagebox.showerror("Fechas", "Formato inválido (use YYYY-MM-DD).", parent=dlg)
                 return
-            data = obtener_ventas_para_historial_gui(fecha_ini, fecha_fin) or {}
+            data = obtener_ventas_para_historial_gui(fecha_ini, fecha_fin, incluir_detalle=False) or {}
             ventas_nuevas = data.get("ventas_mostradas", [])
             total_nuevo = float(data.get("total_periodo", 0.0))
             for item in tree.get_children():
@@ -1568,6 +1622,17 @@ class ColmadoApp:
                 return False
         return self._validate_numeric(proposed)
 
+    @staticmethod
+    def _to_decimal(value, default: str = "0") -> Decimal:
+        try:
+            return Decimal(str(value).replace(",", "."))
+        except (InvalidOperation, ValueError, TypeError):
+            return Decimal(default)
+
+    @staticmethod
+    def _money(value) -> Decimal:
+        return ColmadoApp._to_decimal(value).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
     # -------- Utilidades de ordenamiento en Treeview --------
     def _enable_treeview_sorting(self, tree: ttk.Treeview, original_headers: dict, numeric_cols=None, money_cols=None):
         """Activa ordenamiento clicando encabezados.
@@ -1797,7 +1862,7 @@ class ColmadoApp:
 
         precio_venta_sin_itbis = 0.0
         if es_por_precio_compra and precio_compra > 0: # Solo calcular si precio_compra es válido y mayor a 0
-            precio_venta_sin_itbis = precio_compra * (1 + MARGEN_GANANCIA_POR_DEFECTO)
+            precio_venta_sin_itbis = precio_compra * (1 + self._get_margen_ganancia())
             self.precio_venta_sin_itbis_prod_var.set(f"{precio_venta_sin_itbis:.2f}")
         else: 
             try:
@@ -2415,24 +2480,26 @@ class ColmadoApp:
                                        parent=self.display_frame)
                 return
             
-            precio_unitario_item_venta = float(producto_info_original.get('precio_final_venta', producto_info_original.get('precio',0.0)))
-            precio_sin_itbis_item = float(producto_info_original.get('precio_venta_sin_itbis', precio_unitario_item_venta))
-            itbis_del_item_unitario = 0.0
+            precio_unitario_item_venta = self._money(producto_info_original.get('precio_final_venta', producto_info_original.get('precio',0.0)))
+            precio_sin_itbis_item = self._money(producto_info_original.get('precio_venta_sin_itbis', precio_unitario_item_venta))
+            itbis_del_item_unitario = Decimal("0.00")
             if producto_info_original.get('aplica_itbis'): 
-                itbis_del_item_unitario = precio_unitario_item_venta - precio_sin_itbis_item
+                itbis_del_item_unitario = self._money(precio_unitario_item_venta - precio_sin_itbis_item)
 
             if item_existente_en_cesta:
-                item_existente_en_cesta["cantidad"] += cantidad_a_agregar
-                item_existente_en_cesta["subtotal"] = item_existente_en_cesta["cantidad"] * item_existente_en_cesta["precio_unitario"]
-                item_existente_en_cesta["itbis_item_total"] = item_existente_en_cesta["cantidad"] * itbis_del_item_unitario 
+                cantidad_total = self._to_decimal(item_existente_en_cesta["cantidad"]) + self._to_decimal(cantidad_a_agregar)
+                item_existente_en_cesta["cantidad"] = float(cantidad_total)
+                item_existente_en_cesta["subtotal"] = float(self._money(cantidad_total * precio_unitario_item_venta))
+                item_existente_en_cesta["itbis_item_total"] = float(self._money(cantidad_total * itbis_del_item_unitario))
             else:
+                cantidad_dec = self._to_decimal(cantidad_a_agregar)
                 self.items_en_venta_actual.append({
                     "id": producto_info_original.get("id"), 
                     "nombre": producto_info_original.get("nombre"),
-                    "cantidad": cantidad_a_agregar,
-                    "precio_unitario": precio_unitario_item_venta, 
-                    "subtotal": cantidad_a_agregar * precio_unitario_item_venta,
-                    "itbis_item_total": cantidad_a_agregar * itbis_del_item_unitario 
+                    "cantidad": float(cantidad_dec),
+                    "precio_unitario": float(precio_unitario_item_venta), 
+                    "subtotal": float(self._money(cantidad_dec * precio_unitario_item_venta)),
+                    "itbis_item_total": float(self._money(cantidad_dec * itbis_del_item_unitario))
                 })
 
             self._actualizar_treeview_items_venta()
@@ -2480,48 +2547,50 @@ class ColmadoApp:
         self._actualizar_info_producto_seleccionado_venta()
 
     def _actualizar_sumario_venta(self, event=None):
-        subtotal_con_itbis_antes_descuento = 0.0
-        itbis_total_de_la_venta = 0.0
+        subtotal_con_itbis_antes_descuento = Decimal("0.00")
+        itbis_total_de_la_venta = Decimal("0.00")
 
         for item in self.items_en_venta_actual:
-            subtotal_con_itbis_antes_descuento += item.get("subtotal", 0.0) 
-            itbis_total_de_la_venta += item.get("itbis_item_total", 0.0) 
+            subtotal_con_itbis_antes_descuento += self._money(item.get("subtotal", 0.0))
+            itbis_total_de_la_venta += self._money(item.get("itbis_item_total", 0.0))
 
-        self.subtotal_bruto_venta_var.set(round(subtotal_con_itbis_antes_descuento, 2))
-        self.itbis_total_venta_var.set(round(itbis_total_de_la_venta, 2))
+        subtotal_con_itbis_antes_descuento = self._money(subtotal_con_itbis_antes_descuento)
+        itbis_total_de_la_venta = self._money(itbis_total_de_la_venta)
+        self.subtotal_bruto_venta_var.set(float(subtotal_con_itbis_antes_descuento))
+        self.itbis_total_venta_var.set(float(itbis_total_de_la_venta))
         
         descuento_str = self.descuento_venta_var.get().strip()
-        monto_descuento = 0.0
+        monto_descuento = Decimal("0.00")
         if descuento_str:
             try:
                 if "%" in descuento_str:
-                    porcentaje = float(descuento_str.replace("%", "").replace(',','.'))
-                    if 0 <= porcentaje <= 100:
-                        monto_descuento = subtotal_con_itbis_antes_descuento * (porcentaje / 100)
+                    porcentaje = self._to_decimal(descuento_str.replace("%", "").replace(',','.'))
+                    if Decimal("0") <= porcentaje <= Decimal("100"):
+                        monto_descuento = self._money(subtotal_con_itbis_antes_descuento * (porcentaje / Decimal("100")))
                     else: self.descuento_venta_var.set("0")
                 else: 
-                    monto_fijo = float(descuento_str.replace(',','.'))
-                    if 0 <= monto_fijo <= subtotal_con_itbis_antes_descuento:
+                    monto_fijo = self._to_decimal(descuento_str.replace(',','.'))
+                    if Decimal("0") <= monto_fijo <= subtotal_con_itbis_antes_descuento:
                         monto_descuento = monto_fijo
                     else: self.descuento_venta_var.set("0")
-            except ValueError:
+            except (ValueError, InvalidOperation):
                 if descuento_str : self.descuento_venta_var.set("0") 
-                monto_descuento = 0.0
+                monto_descuento = Decimal("0.00")
 
-        self.descuento_aplicado_monto_var.set(round(monto_descuento, 2))
-        total_neto_a_pagar = subtotal_con_itbis_antes_descuento - monto_descuento
-        self.total_neto_venta_var.set(round(total_neto_a_pagar, 2))
+        monto_descuento = self._money(monto_descuento)
+        self.descuento_aplicado_monto_var.set(float(monto_descuento))
+        total_neto_a_pagar = self._money(subtotal_con_itbis_antes_descuento - monto_descuento)
+        self.total_neto_venta_var.set(float(total_neto_a_pagar))
 
         try:
-            dinero_recibido_str = self.dinero_recibido_var.get().replace(',', '.')
-            dinero_recibido = float(dinero_recibido_str or "0")
-            if dinero_recibido > 0 and dinero_recibido >= total_neto_a_pagar:
-                cambio = dinero_recibido - total_neto_a_pagar
-                self.cambio_devuelto_var.set(f"RD$ {cambio:.2f}")
-            elif dinero_recibido > 0 and dinero_recibido < total_neto_a_pagar:
+            dinero_recibido = self._money(self.dinero_recibido_var.get().replace(',', '.') or "0")
+            if dinero_recibido > Decimal("0") and dinero_recibido >= total_neto_a_pagar:
+                cambio = self._money(dinero_recibido - total_neto_a_pagar)
+                self.cambio_devuelto_var.set(f"RD$ {float(cambio):.2f}")
+            elif dinero_recibido > Decimal("0") and dinero_recibido < total_neto_a_pagar:
                 self.cambio_devuelto_var.set("Pago Insuficiente")
             else: self.cambio_devuelto_var.set("RD$ 0.00")
-        except ValueError: 
+        except (ValueError, InvalidOperation): 
             self.cambio_devuelto_var.set("Entrada Invalida") if self.dinero_recibido_var.get() else "RD$ 0.00"
 
     def _confirmar_venta_action(self):
@@ -2550,20 +2619,17 @@ class ColmadoApp:
         descuento_monto = self.descuento_aplicado_monto_var.get()
         itbis_total_para_guardar = self.itbis_total_venta_var.get()
         
-        subtotal_real_sin_itbis = 0.0
+        subtotal_real_sin_itbis = Decimal("0.00")
         for item in self.items_en_venta_actual:
-            precio_unitario_final_item = item.get("precio_unitario", 0.0)
-            itbis_item_total = item.get("itbis_item_total", 0.0)
-            cantidad_item = item.get("cantidad", 1)
-            if cantidad_item == 0: cantidad_item = 1 # Evitar división por cero si la cantidad es 0
-            
-            precio_unitario_sin_itbis_item = precio_unitario_final_item - (itbis_item_total / cantidad_item)
-            subtotal_real_sin_itbis += precio_unitario_sin_itbis_item * cantidad_item
+            subtotal_item = self._money(item.get("subtotal", 0.0))
+            itbis_item_total = self._money(item.get("itbis_item_total", 0.0))
+            subtotal_real_sin_itbis += self._money(subtotal_item - itbis_item_total)
+        subtotal_real_sin_itbis = self._money(subtotal_real_sin_itbis)
 
         confirm_msg = (f"Total a Pagar: RD$ {total_a_pagar:.2f}\nITBIS Incluido: RD$ {itbis_total_para_guardar:.2f}\nDinero Recibido: RD$ {dinero_recibido_float:.2f}\nCambio a Devolver: RD$ {cambio_calculado:.2f}\n\n¿Confirmar y guardar la venta?")
         confirm = messagebox.askyesno("Confirmar Venta Final", confirm_msg, parent=self.display_frame)
         if not confirm: return
-        resultado = procesar_nueva_venta_gui( cliente_id_seleccionado=cliente_id_final, items_vendidos=self.items_en_venta_actual, total_bruto_sin_itbis=subtotal_real_sin_itbis, itbis_total_venta=itbis_total_para_guardar, descuento_aplicado=descuento_monto, total_neto=total_a_pagar, dinero_recibido=dinero_recibido_float, cambio_devuelto=cambio_calculado )
+        resultado = procesar_nueva_venta_gui( cliente_id_seleccionado=cliente_id_final, items_vendidos=self.items_en_venta_actual, total_bruto_sin_itbis=float(subtotal_real_sin_itbis), itbis_total_venta=itbis_total_para_guardar, descuento_aplicado=descuento_monto, total_neto=total_a_pagar, dinero_recibido=dinero_recibido_float, cambio_devuelto=cambio_calculado )
         if resultado["exito"]:
             messagebox.showinfo("Venta Exitosa", resultado["mensaje"], parent=self.display_frame)
             if 'venta_registrada' in resultado:
@@ -2970,6 +3036,30 @@ class ColmadoApp:
 
         # Seccion de datos del negocio solo para admin
         if self._role == 'admin':
+            margen_frame = ttk.LabelFrame(cont, text="Parámetros de Venta", padding="12")
+            margen_frame.pack(fill=tk.X, pady=(0, 12))
+            ttk.Label(margen_frame, text="Margen automático sobre precio de compra (%):").grid(row=0, column=0, sticky="w")
+            self.margen_ganancia_var = tk.StringVar(value=f"{self._get_margen_ganancia() * 100:.2f}")
+            ttk.Entry(
+                margen_frame,
+                textvariable=self.margen_ganancia_var,
+                width=12,
+                validate="key",
+                validatecommand=(self.root.register(self._validate_numeric), "%P")
+            ).grid(row=0, column=1, sticky="w", padx=(8, 0))
+            ttk.Button(
+                margen_frame,
+                text="Guardar margen",
+                style="Accent.TButton",
+                command=self._guardar_parametros_venta
+            ).grid(row=0, column=2, sticky="e", padx=(10, 0))
+            ttk.Label(
+                margen_frame,
+                text="Se usa para autocalcular 'Precio Venta s/ITBIS' cuando escribes el precio de compra.",
+                style="Muted.TLabel"
+            ).grid(row=1, column=0, columnspan=3, sticky="w", pady=(6, 0))
+            margen_frame.columnconfigure(0, weight=1)
+
             empresa_info = self._get_empresa_info()
             datos_frame = ttk.LabelFrame(cont, text="Datos del Negocio", padding="12")
             datos_frame.pack(fill=tk.BOTH, expand=True)
